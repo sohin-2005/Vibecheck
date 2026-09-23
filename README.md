@@ -20,7 +20,17 @@ uv run promptlens demo
 PROMPTLENS_DATABASE_URL=sqlite:///$HOME/.promptlens/demo.db uv run promptlens serve
 ```
 
-Then open http://127.0.0.1:8000. On Windows PowerShell, set the variable with `$env:PROMPTLENS_DATABASE_URL = "sqlite:///$HOME/.promptlens/demo.db"` first.
+Then open http://127.0.0.1:8000.
+
+On Windows PowerShell 5.1 (no `&&`), run each line separately:
+
+```powershell
+cd frontend; npm install; npm run build; cd ..
+cd backend; python -m uv sync
+python -m uv run promptlens demo
+$env:PROMPTLENS_DATABASE_URL = "sqlite:///$($HOME -replace '\\','/')/.promptlens/demo.db"
+python -m uv run promptlens serve
+```
 
 No uv? `python -m pip install uv` works, then use `python -m uv` in place of `uv`.
 
