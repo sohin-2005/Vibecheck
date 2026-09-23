@@ -10,3 +10,4 @@ reports/
 *.db
 *.sqlite
 .env
+.claude/launch.json
