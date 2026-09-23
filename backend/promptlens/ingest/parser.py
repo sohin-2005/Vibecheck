@@ -137,7 +137,7 @@ def _classify_user(
     text = _text_of(blocks)
     if results or "toolUseResult" in raw or any(b.get("type") == "tool_result" for b in blocks):
         return "tool_result", text, results
-    if interrupt_re.search(text):
+    if interrupt_re.match(text.strip()):
         return "interrupt", text, results
     origin = raw.get("origin")
     origin_kind = origin.get("kind") if isinstance(origin, dict) else None

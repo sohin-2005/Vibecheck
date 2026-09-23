@@ -108,3 +108,11 @@ def test_summarize_counts():
     assert s["malformed_lines"] == 2
     assert s["kinds"]["human"] == 3
     assert s["kinds"]["assistant"] == 4
+
+
+def test_prompt_that_mentions_interrupt_marker_is_still_human():
+    line = (
+        '{"type": "user", "uuid": "q", "message": {"role": "user", "content": '
+        '"Spec: interrupts look like [Request interrupted by user...] in logs"}}'
+    )
+    assert parse_line(line).kind == "human"
