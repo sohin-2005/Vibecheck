@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "promptlens-demo",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "uv", "run", "--directory", "backend", "promptlens", "serve", "--port", "8765"],
+      "env": { "PROMPTLENS_DATABASE_URL": "sqlite:///C:/Users/User/.promptlens/demo.db" },
+      "port": 8765
+    }
+  ]
+}
