@@ -175,7 +175,7 @@ def stats() -> None:
     console.print(t)
     if unpriced:
         console.print(
-            f"[yellow]{unpriced} sessions use models with no price in config; "
+            f"[yellow]{unpriced} session(s) use models with no price in config; "
             r"add them under \[pricing.models] to see cost.[/]"
         )
 
