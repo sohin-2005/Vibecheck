@@ -28,8 +28,8 @@ function WhyScore({ signals, weights }: { signals: Record<string, number>; weigh
               {p.n} × {weights[p.weightKey] ?? 0} = <span className="font-medium text-ink">{p.pts.toFixed(1)}</span>
             </span>
           </div>
-          <div className="mt-1 h-1.5 rounded-full bg-surface-2">
-            <div className="h-1.5 rounded-full" style={{ width: `${(p.pts / max) * 100}%`, background: 'var(--series-1)' }} />
+          <div className="mt-1.5 h-[3px] bg-surface-2">
+            <div className="h-[3px]" style={{ width: `${(p.pts / max) * 100}%`, background: 'var(--series-1)' }} />
           </div>
         </div>
       ))}
@@ -50,8 +50,8 @@ function TimelineRow({ item }: { item: TimelineItem }) {
         {time}
         <div className="min-w-0">
           <span
-            className={`inline-flex max-w-full items-center gap-1.5 rounded-md px-2 py-0.5 text-xs ${
-              item.is_error ? 'bg-error-bg text-error-ink' : 'bg-surface-2 text-ink-2'
+            className={`inline-flex max-w-full items-center gap-1.5 border px-1.5 py-px text-xs ${
+              item.is_error ? 'border-error-ink/50 text-error-ink' : 'border-line text-ink-2'
             }`}
           >
             <span className="font-medium">{item.is_error ? `✕ ${item.tool_name}` : item.tool_name}</span>
@@ -74,9 +74,9 @@ function TimelineRow({ item }: { item: TimelineItem }) {
     return (
       <div className="flex gap-3 py-2">
         {time}
-        <div className="min-w-0 flex-1 rounded-lg border-l-4 bg-surface-2 px-3 py-2" style={{ borderColor: 'var(--accent)' }}>
-          <div className="mb-1 text-xs font-medium text-accent">You</div>
-          <div className="text-sm break-words whitespace-pre-wrap">{item.text}</div>
+        <div className="min-w-0 flex-1 border-l-2 border-accent py-1 pl-4">
+          <div className="label mb-1 text-accent">You</div>
+          <div className="serif text-[15px] leading-relaxed break-words whitespace-pre-wrap">{item.text}</div>
         </div>
       </div>
     )
@@ -127,7 +127,7 @@ export default function SessionDetail() {
         }
         right={<StruggleBadge score={s.struggle_score} />}
       />
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
+      <div className="grid grid-cols-2 border-y border-rule lg:grid-cols-5">
         <Kpi label="Prompts" value={s.human_turns} hint={`${s.assistant_turns} Claude replies`} />
         <Kpi label="Active time" value={fmtMinutes(s.active_minutes)} />
         <Kpi label="Tokens (in + out)" value={fmtCompact(s.input_tokens + s.output_tokens)} hint={`+ ${fmtCompact(s.cache_read_tokens + s.cache_write_tokens)} cache`} />
@@ -135,7 +135,7 @@ export default function SessionDetail() {
         <Kpi label="Prompts to first commit" value={s.turns_to_commit ?? '—'} hint={s.has_commit ? `${s.commits.length} linked commit(s)` : 'No linked commit'} />
       </div>
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+      <div className="mt-12 grid gap-x-12 gap-y-12 lg:grid-cols-2">
         <Card title="Why this struggle score">
           {s.struggle_signals && cfg.data ? (
             <WhyScore signals={s.struggle_signals} weights={cfg.data.struggle_weights} />
@@ -145,7 +145,7 @@ export default function SessionDetail() {
         </Card>
         <Card title="Linked commits" subtitle="How the link was made, and how much of the code survived.">
           {s.commits.length ? (
-            <div className="-mx-5 overflow-x-auto">
+            <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-line">
@@ -184,7 +184,7 @@ export default function SessionDetail() {
       </div>
 
       <Card
-        className="mt-4"
+        className="mt-12"
         title="Replay"
         subtitle="Your prompts, Claude's replies and every tool call, in order. Errors are shown in red."
         right={

@@ -31,7 +31,7 @@ export default function Overview() {
         </Card>
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+          <div className="grid grid-cols-2 border-y border-rule lg:grid-cols-5">
             <Kpi label="Sessions" value={fmtInt(t.sessions)} hint={`${fmtInt(t.prompts)} prompts`} />
             <Kpi label="Active hours" value={t.active_hours.toFixed(1)} hint="Idle gaps over 30 min excluded" />
             <Kpi
@@ -62,7 +62,7 @@ export default function Overview() {
             />
           </div>
 
-          <div className="mt-4 grid gap-4 lg:grid-cols-3">
+          <div className="mt-12 grid gap-x-12 gap-y-12 lg:grid-cols-3">
             <Card
               className="lg:col-span-2"
               title={hasCost ? 'Daily API-equivalent cost' : 'Daily tokens (in + out)'}
@@ -97,11 +97,11 @@ export default function Overview() {
             </Card>
           </div>
 
-          <Card className="mt-4" title="Insights" subtitle="Correlations between your prompting habits and outcomes.">
+          <Card className="mt-12" title="Insights" subtitle="Correlations between your prompting habits and outcomes.">
             {insights.data?.length ? (
-              <ul className="space-y-2 text-sm">
+              <ul>
                 {insights.data.slice(0, 5).map((i) => (
-                  <li key={i.id} className="rounded-lg bg-surface-2 px-3 py-2">
+                  <li key={i.id} className="serif border-b border-line py-3 text-[16px] leading-snug last:border-0">
                     {i.title}
                   </li>
                 ))}

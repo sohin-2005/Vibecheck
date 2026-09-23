@@ -33,12 +33,12 @@ export default function Coach() {
     <div>
       <PageHeader title="Prompt coach" subtitle={`How specific and well-scoped your prompts are. Rubric ${s.rubric_version}.`} />
       {s.scored === 0 && (
-        <div className="mb-4 rounded-lg border border-line bg-surface px-4 py-3 text-sm text-ink-2">
+        <div className="mb-8 border-l-2 border-accent py-1 pl-4 text-sm text-ink-2">
           None of your {s.prompts} prompts have LLM scores yet. Run <code>promptlens coach</code> with Ollama running, or
           start it from <Link className="underline" to="/settings">Settings</Link>. Rule-based stats below work without it.
         </div>
       )}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+      <div className="grid grid-cols-2 border-y border-rule lg:grid-cols-5">
         <Kpi label="Prompts" value={s.prompts} hint={`${s.scored} scored by LLM`} />
         <Kpi label="Avg specificity" value={s.avg_specificity?.toFixed(2) ?? '—'} hint="1 = vague, 5 = precise" />
         <Kpi label="With context" value={fmtPct(s.pct_context ?? s.features.pct_mentions_file)} hint={s.pct_context == null ? 'Rule-based: mentions a file' : 'Files, errors or code'} />
@@ -46,7 +46,7 @@ export default function Coach() {
         <Kpi label="Median length" value={s.features.median_chars ?? '—'} hint="characters" />
       </div>
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+      <div className="mt-12 grid gap-x-12 gap-y-12 lg:grid-cols-2">
         <Card title="Specificity distribution" subtitle="LLM-scored prompts only.">
           {s.scored ? (
             <SimpleBarChart data={dist} x="specificity" series={[{ key: 'prompts', label: 'Prompts', color: 'var(--series-1)' }]} height={220} />
@@ -84,12 +84,12 @@ export default function Coach() {
         </Card>
       </div>
 
-      <Card className="mt-4" title="Insights" subtitle="Correlations, not causes. Each needs at least 10 sessions per group.">
+      <Card className="mt-12" title="Insights" subtitle="Correlations, not causes. Each needs at least 10 sessions per group.">
         {insights.data?.length ? (
           <div className="grid gap-3 md:grid-cols-2">
             {insights.data.map((i) => (
-              <div key={i.id} className="rounded-lg border border-line p-3 text-sm">
-                <p>{i.title}</p>
+              <div key={i.id} className="border-t border-line pt-3">
+                <p className="serif text-[16px] leading-snug">{i.title}</p>
                 {Array.isArray(i.detail.ci95_diff) && (
                   <p className="mt-1 text-xs text-ink-3">
                     95% interval for the difference in medians: {(i.detail.ci95_diff as number[]).join(' to ')}
@@ -104,7 +104,7 @@ export default function Coach() {
       </Card>
 
       <Card
-        className="mt-4"
+        className="mt-12"
         title="Your prompts"
         right={
           <div className="flex flex-wrap items-center gap-2 text-sm">
@@ -115,7 +115,7 @@ export default function Coach() {
                 setCategory(e.target.value)
                 setPage(1)
               }}
-              className="rounded-lg border border-line bg-surface px-2 py-1"
+              className="border border-line bg-surface px-2 py-1 text-[13px] text-ink"
             >
               <option value="">All categories</option>
               {CATEGORIES.map((c) => (

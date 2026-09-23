@@ -12,7 +12,7 @@ import {
   YAxis,
 } from 'recharts'
 
-const axis = { stroke: 'var(--ink-3)', fontSize: 12, tickLine: false, axisLine: false } as const
+const axis = { stroke: 'var(--ink-3)', fontSize: 11, tickLine: false, axisLine: false } as const
 
 type Series = { key: string; label: string; color: string; format?: (v: number) => string }
 
@@ -31,14 +31,14 @@ function ChartTooltip({
 }) {
   if (!active || !payload?.length) return null
   return (
-    <div className="rounded-lg border border-line bg-surface px-3 py-2 text-xs shadow-lg">
+    <div className="border border-rule bg-surface px-3 py-2 text-xs">
       <div className="mb-1 font-medium text-ink">{labelFormat ? labelFormat(String(label)) : String(label ?? "")}</div>
       {payload.map((p) => {
         const s = series.find((x) => x.key === p.dataKey)
         const v = typeof p.value === 'number' ? p.value : Number(p.value)
         return (
           <div key={String(p.dataKey)} className="flex items-center gap-2 text-ink-2">
-            <span className="inline-block h-2 w-2 rounded-full" style={{ background: s?.color }} />
+            <span className="inline-block h-2 w-2" style={{ background: s?.color }} />
             <span>{s?.label}</span>
             <span className="num ml-auto pl-3 font-medium text-ink">{s?.format ? s.format(v) : v}</span>
           </div>
@@ -64,7 +64,7 @@ export function WithTable({
       <div className="mb-2 flex justify-end">
         <button
           type="button"
-          className="text-xs text-ink-3 underline-offset-2 hover:text-ink hover:underline"
+          className="label text-ink-3 hover:text-ink"
           onClick={() => setTable(!table)}
         >
           {table ? 'Show chart' : 'Show table'}
@@ -76,7 +76,7 @@ export function WithTable({
             <thead>
               <tr>
                 {columns.map((c) => (
-                  <th key={c.key} className="px-2 py-1 text-left text-xs font-medium text-ink-2">
+                  <th key={c.key} className="label px-2 py-1 text-left">
                     {c.label}
                   </th>
                 ))}
@@ -129,7 +129,7 @@ export function TimeLineChart({
           cursor={{ stroke: 'var(--ink-3)', strokeDasharray: '3 3' }}
           content={(p) => <ChartTooltip {...p} series={series} labelFormat={labelFormat} />}
         />
-        {series.length > 1 && <Legend iconType="plainline" wrapperStyle={{ fontSize: 12, color: 'var(--ink-2)' }} />}
+        {series.length > 1 && <Legend iconType="plainline" wrapperStyle={{ fontSize: 12, color: 'var(--ink-2)', paddingTop: 8 }} />}
         {series.map((s) => (
           <Line
             key={s.key}
@@ -191,7 +191,7 @@ export function SimpleBarChart({
             dataKey={s.key}
             name={s.label}
             fill={s.color}
-            radius={horizontal ? [0, 4, 4, 0] : [4, 4, 0, 0]}
+            radius={horizontal ? [0, 2, 2, 0] : [2, 2, 0, 0]}
             maxBarSize={horizontal ? 18 : 48}
             stroke="var(--surface)"
             strokeWidth={1}

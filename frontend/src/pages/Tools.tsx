@@ -43,7 +43,7 @@ export default function Tools() {
             </WithTable>
           </Card>
           <Card title="Error rate by tool" subtitle="Tools with at least 5 calls, highest error rate first.">
-            <div className="-mx-5 overflow-x-auto">
+            <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-line">
@@ -61,9 +61,9 @@ export default function Tools() {
                       <Td className="num text-right">{fmtInt(t.errors)}</Td>
                       <Td>
                         <div className="flex items-center gap-2">
-                          <div className="h-1.5 w-24 rounded-full bg-surface-2">
+                          <div className="h-[3px] w-24 bg-surface-2">
                             <div
-                              className="h-1.5 rounded-full"
+                              className="h-[3px]"
                               style={{ width: `${Math.min(100, t.error_rate)}%`, background: 'var(--critical)' }}
                             />
                           </div>

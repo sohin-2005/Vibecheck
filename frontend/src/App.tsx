@@ -41,29 +41,44 @@ function useTheme(): [Theme, (t: Theme) => void] {
   return [theme, setTheme]
 }
 
+const today = new Date().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+
 export default function App() {
   const [theme, setTheme] = useTheme()
   return (
-    <div className="min-h-screen md:flex">
-      <aside className="border-b border-line bg-surface md:sticky md:top-0 md:h-screen md:w-52 md:shrink-0 md:border-r md:border-b-0">
-        <div className="flex items-center justify-between px-4 py-4 md:block">
-          <div className="flex items-center gap-2">
-            <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden>
-              <circle cx="11" cy="11" r="7" fill="none" stroke="var(--accent)" strokeWidth="2.5" />
-              <path d="M16 16l5 5" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round" />
-            </svg>
-            <span className="font-semibold tracking-tight">PromptLens</span>
+    <div className="mx-auto min-h-screen max-w-[1240px] px-4 pb-16 sm:px-8">
+      <header className="pt-7">
+        <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-rule pb-3">
+          <div className="flex items-baseline gap-4">
+            <span className="serif text-[26px] leading-none tracking-tight">PromptLens</span>
+            <span className="hidden text-[13px] text-ink-3 italic serif sm:inline">a ledger of your AI-assisted coding</span>
+          </div>
+          <div className="flex items-baseline gap-4 text-[12px] text-ink-3">
+            <span className="hidden md:inline">{today}</span>
+            <span role="group" aria-label="Theme" className="flex gap-2">
+              {(['system', 'light', 'dark'] as Theme[]).map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  aria-pressed={theme === t}
+                  onClick={() => setTheme(t)}
+                  className={theme === t ? 'text-ink underline underline-offset-4' : 'hover:text-ink'}
+                >
+                  {t === 'system' ? 'Auto' : t[0].toUpperCase() + t.slice(1)}
+                </button>
+              ))}
+            </span>
           </div>
         </div>
-        <nav className="flex gap-1 overflow-x-auto px-2 pb-2 md:flex-col md:pb-0">
+        <nav className="flex gap-6 overflow-x-auto overflow-y-hidden border-b border-line" aria-label="Sections">
           {NAV.map((n) => (
             <NavLink
               key={n.to}
               to={n.to}
               end={n.to === '/'}
               className={({ isActive }) =>
-                `whitespace-nowrap rounded-lg px-3 py-2 text-sm ${
-                  isActive ? 'bg-surface-2 font-medium text-ink' : 'text-ink-2 hover:bg-surface-2 hover:text-ink'
+                `-mb-px whitespace-nowrap border-b-2 py-3 text-[14px] transition-colors ${
+                  isActive ? 'border-accent text-ink' : 'border-transparent text-ink-2 hover:text-ink'
                 }`
               }
             >
@@ -71,25 +86,11 @@ export default function App() {
             </NavLink>
           ))}
         </nav>
-        <div className="hidden px-4 py-4 md:absolute md:bottom-0 md:block">
-          <label className="text-xs text-ink-3">
-            Theme
-            <select
-              value={theme}
-              onChange={(e) => setTheme(e.target.value as Theme)}
-              className="mt-1 block rounded-md border border-line bg-surface px-2 py-1 text-sm text-ink"
-            >
-              <option value="system">System</option>
-              <option value="light">Light</option>
-              <option value="dark">Dark</option>
-            </select>
-          </label>
-        </div>
-      </aside>
-      <main className="min-w-0 flex-1 px-4 py-6 md:px-8">
-        <div className="mb-6">
+        <div className="py-4">
           <FilterBar />
         </div>
+      </header>
+      <main className="pt-4">
         <Routes>
           <Route path="/" element={<Overview />} />
           <Route path="/sessions" element={<Sessions />} />
@@ -100,6 +101,9 @@ export default function App() {
           <Route path="/settings" element={<Settings />} />
         </Routes>
       </main>
+      <footer className="mt-16 border-t border-line pt-4 text-[12px] text-ink-3">
+        Local data only. Costs are API-equivalent estimates; insights are correlations, not causes.
+      </footer>
     </div>
   )
 }

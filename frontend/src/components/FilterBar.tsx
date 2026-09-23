@@ -1,12 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
 import { get, type Project } from '../api/client'
 import { useFilters } from '../lib/filters'
+import { selectCls } from './ui'
 
 const PRESETS: { label: string; days: number | null }[] = [
-  { label: '7d', days: 7 },
-  { label: '30d', days: 30 },
-  { label: '90d', days: 90 },
-  { label: 'All', days: null },
+  { label: '7 days', days: 7 },
+  { label: '30 days', days: 30 },
+  { label: '90 days', days: 90 },
+  { label: 'All time', days: null },
 ]
 
 const iso = (d: Date) => d.toISOString().slice(0, 10)
@@ -23,14 +24,15 @@ export default function FilterBar() {
   })
 
   return (
-    <div className="flex flex-wrap items-center gap-2 text-sm">
-      <div className="flex overflow-hidden rounded-lg border border-line bg-surface" role="group" aria-label="Date range">
+    <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px]">
+      <span className="label">Period</span>
+      <div className="flex gap-3" role="group" aria-label="Date range">
         {PRESETS.map((p) => (
           <button
             key={p.label}
             type="button"
             aria-pressed={activePreset === p}
-            className={`px-2.5 py-1.5 ${activePreset === p ? 'bg-surface-2 font-medium text-ink' : 'text-ink-2 hover:text-ink'}`}
+            className={activePreset === p ? 'text-ink underline decoration-accent decoration-2 underline-offset-4' : 'text-ink-2 hover:text-ink'}
             onClick={() => {
               if (p.days === null) return setFilters({ ...filters, from: undefined, to: undefined })
               const from = new Date()
@@ -42,30 +44,29 @@ export default function FilterBar() {
           </button>
         ))}
       </div>
-      <label className="flex items-center gap-1 text-ink-2">
-        <span className="sr-only">From</span>
+      <div className="flex items-center gap-2 text-ink-3">
         <input
           type="date"
+          aria-label="From"
           value={filters.from ?? ''}
           onChange={(e) => setFilters({ ...filters, from: e.target.value || undefined })}
-          className="rounded-lg border border-line bg-surface px-2 py-1 text-ink"
+          className={selectCls}
         />
-      </label>
-      <span className="text-ink-3">to</span>
-      <label className="flex items-center gap-1 text-ink-2">
-        <span className="sr-only">To</span>
+        <span>to</span>
         <input
           type="date"
+          aria-label="To"
           value={filters.to ?? ''}
           onChange={(e) => setFilters({ ...filters, to: e.target.value || undefined })}
-          className="rounded-lg border border-line bg-surface px-2 py-1 text-ink"
+          className={selectCls}
         />
-      </label>
+      </div>
+      <span className="label ml-auto">Project</span>
       <select
         aria-label="Project"
         value={filters.project_id ?? ''}
         onChange={(e) => setFilters({ ...filters, project_id: e.target.value ? Number(e.target.value) : undefined })}
-        className="rounded-lg border border-line bg-surface px-2 py-1.5 text-ink"
+        className={selectCls}
       >
         <option value="">All projects</option>
         {projects.data?.map((p) => (

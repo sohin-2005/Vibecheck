@@ -34,7 +34,7 @@ export default function Survival() {
         </Card>
       ) : (
         <>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="grid grid-cols-1 border-y border-rule sm:grid-cols-3">
             {[1, 7, 30].map((days) => {
               const c = byDays[days]
               return (
@@ -53,7 +53,7 @@ export default function Survival() {
           </div>
 
           <Card
-            className="mt-4"
+            className="mt-12"
             title={groupBy === 'project' ? 'Survival by project' : 'Survival by file type'}
             subtitle="7-day survival rate. Deleted code can mean a feature was removed, not that the code was bad."
             right={
@@ -61,7 +61,7 @@ export default function Survival() {
                 aria-label="Group by"
                 value={groupBy}
                 onChange={(e) => setGroupBy(e.target.value as typeof groupBy)}
-                className="rounded-lg border border-line bg-surface px-2 py-1 text-sm"
+                className="border border-line bg-surface px-2 py-1 text-[13px] text-ink"
               >
                 <option value="project">By project</option>
                 <option value="file_ext">By file type</option>
@@ -89,9 +89,9 @@ export default function Survival() {
             </WithTable>
           </Card>
 
-          <Card className="mt-4" title="Lowest-survival commits (7 days)">
+          <Card className="mt-12" title="Lowest-survival commits (7 days)">
             {d.lowest_commits.length ? (
-              <div className="-mx-5 overflow-x-auto">
+              <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-line">

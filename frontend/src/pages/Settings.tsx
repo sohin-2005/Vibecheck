@@ -32,7 +32,7 @@ export default function Settings() {
       <Card title="Run jobs">
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {JOBS.map((j) => (
-            <div key={j.name} className="flex items-center justify-between gap-2 rounded-lg border border-line p-3">
+            <div key={j.name} className="flex items-center justify-between gap-2 border-t border-line py-3">
               <div>
                 <div className="text-sm font-medium">{j.label}</div>
                 <div className="text-xs text-ink-3">{j.help}</div>
@@ -47,11 +47,11 @@ export default function Settings() {
             </div>
           ))}
         </div>
-        <h3 className="mt-5 mb-2 text-sm font-semibold">Recent jobs</h3>
+        <h3 className="label mt-8 mb-2">Recent jobs</h3>
         {jobs.data?.length ? (
           <ul className="space-y-2 text-sm">
             {jobs.data.map((j) => (
-              <li key={j.id} className="rounded-lg bg-surface-2 px-3 py-2">
+              <li key={j.id} className="border-b border-line py-2">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-medium">{j.name}</span>
                   <Pill tone={j.status === 'failed' ? 'error' : j.status === 'done' ? 'accent' : 'neutral'}>
@@ -68,7 +68,7 @@ export default function Settings() {
           <p className="text-sm text-ink-3">No jobs yet in this server session.</p>
         )}
       </Card>
-      <Card className="mt-4" title="Configuration">
+      <Card className="mt-12" title="Configuration">
         {cfg.isLoading ? (
           <Loading />
         ) : cfg.error ? (
@@ -76,12 +76,12 @@ export default function Settings() {
         ) : (
           <>
             {Array.isArray(cfg.data!.priced_models) && !(cfg.data!.priced_models as string[]).length && (
-              <p className="mb-3 rounded-lg bg-surface-2 px-3 py-2 text-sm text-ink-2">
+              <p className="mb-4 border-l-2 border-accent py-1 pl-4 text-sm text-ink-2">
                 No model prices configured, so costs show as n/a. Add a <code>[pricing.models."model-id"]</code> table with
                 current USD-per-million-token prices to your config file.
               </p>
             )}
-            <pre className="overflow-x-auto rounded-lg bg-surface-2 p-3 text-xs">{JSON.stringify(cfg.data, null, 2)}</pre>
+            <pre className="overflow-x-auto border border-line bg-surface p-4 font-mono text-xs leading-relaxed">{JSON.stringify(cfg.data, null, 2)}</pre>
           </>
         )}
       </Card>

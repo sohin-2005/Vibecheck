@@ -56,7 +56,7 @@ export default function Sessions() {
               setCommitted(e.target.value as typeof committed)
               setPage(1)
             }}
-            className="rounded-lg border border-line bg-surface px-2 py-1.5 text-sm"
+            className="border border-line bg-surface px-2 py-1 text-[13px] text-ink"
           >
             <option value="">All sessions</option>
             <option value="true">With a commit</option>
@@ -73,7 +73,7 @@ export default function Sessions() {
           <Empty>No sessions match these filters.</Empty>
         ) : (
           <>
-            <div className="-mx-5 overflow-x-auto">
+            <div className="overflow-x-auto">
               <table className="w-full min-w-[760px] text-sm">
                 <thead className="border-b border-line">
                   <tr>
@@ -83,7 +83,7 @@ export default function Sessions() {
                           <button
                             type="button"
                             onClick={() => onSort(c.key!)}
-                            className={`hover:text-ink ${sort === c.key ? 'text-ink' : ''}`}
+                            className={`uppercase tracking-[0.08em] hover:text-ink ${sort === c.key ? "text-ink" : ""}`}
                           >
                             {c.label}
                             {sort === c.key ? (order === 'desc' ? ' ↓' : ' ↑') : ''}
@@ -112,7 +112,7 @@ export default function Sessions() {
                       <Td>
                         <StruggleBadge score={s.struggle_score} />
                       </Td>
-                      <Td>{s.has_commit ? '✓ Yes' : <span className="text-ink-3">No</span>}</Td>
+                      <Td>{s.has_commit ? 'Yes' : <span className="text-ink-3">No</span>}</Td>
                     </tr>
                   ))}
                 </tbody>

@@ -1,60 +1,72 @@
 @import "tailwindcss";
 
+/* Editorial ledger look: paper, ink, hairline rules, one oxblood accent. */
 :root {
   color-scheme: light;
-  --bg: #f4f4f2;
-  --surface: #fcfcfb;
-  --surface-2: #f0efec;
-  --border: #e2e1dc;
-  --ink: #0b0b0b;
-  --ink-2: #52514e;
-  --ink-3: #7a7974;
-  --grid: #e8e7e3;
-  --accent: #2a78d6;
-  --series-1: #2a78d6;
-  --series-2: #eb6834;
-  --good: #0ca30c;
-  --warning: #fab219;
-  --serious: #ec835a;
-  --critical: #d03b3b;
-  --error-bg: #fbeaea;
-  --error-ink: #a12a2a;
+  --bg: #f5f3ee;
+  --surface: #fbfaf7;
+  --surface-2: #ebe8e0;
+  --border: #d8d3c7;
+  --rule: #1c1b18;
+  --ink: #1c1b18;
+  --ink-2: #57544c;
+  --ink-3: #8a857a;
+  --grid: #e3dfd5;
+  --accent: #8e3a22;
+  --series-1: #2e5f94;
+  --series-2: #b04a2c;
+  --good: #3f7d3a;
+  --warning: #b58a1b;
+  --serious: #c0692f;
+  --critical: #a8322a;
+  --error-bg: #f3e3dd;
+  --error-ink: #8e2a1e;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:where(:not([data-theme="light"])) {
     color-scheme: dark;
-    --bg: #111110;
-    --surface: #1a1a19;
-    --surface-2: #242422;
-    --border: #33332f;
-    --ink: #ffffff;
-    --ink-2: #c3c2b7;
-    --ink-3: #8f8e86;
-    --grid: #2c2c29;
-    --accent: #3987e5;
-    --series-1: #3987e5;
-    --series-2: #d95926;
-    --error-bg: #3a1c1c;
-    --error-ink: #f0a3a3;
+    --bg: #161512;
+    --surface: #1d1c19;
+    --surface-2: #26241f;
+    --border: #36332d;
+    --rule: #e9e4d8;
+    --ink: #ece7dc;
+    --ink-2: #b3ada0;
+    --ink-3: #7f7a6e;
+    --grid: #2a2823;
+    --accent: #d88a6c;
+    --series-1: #5a8bcb;
+    --series-2: #c96444;
+    --good: #7fb872;
+    --warning: #d9b04a;
+    --serious: #df8a55;
+    --critical: #e0665c;
+    --error-bg: #34201b;
+    --error-ink: #f0a896;
   }
 }
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #111110;
-  --surface: #1a1a19;
-  --surface-2: #242422;
-  --border: #33332f;
-  --ink: #ffffff;
-  --ink-2: #c3c2b7;
-  --ink-3: #8f8e86;
-  --grid: #2c2c29;
-  --accent: #3987e5;
-  --series-1: #3987e5;
-  --series-2: #d95926;
-  --error-bg: #3a1c1c;
-  --error-ink: #f0a3a3;
+  --bg: #161512;
+  --surface: #1d1c19;
+  --surface-2: #26241f;
+  --border: #36332d;
+  --rule: #e9e4d8;
+  --ink: #ece7dc;
+  --ink-2: #b3ada0;
+  --ink-3: #7f7a6e;
+  --grid: #2a2823;
+  --accent: #d88a6c;
+  --series-1: #5a8bcb;
+  --series-2: #c96444;
+  --good: #7fb872;
+  --warning: #d9b04a;
+  --serious: #df8a55;
+  --critical: #e0665c;
+  --error-bg: #34201b;
+  --error-ink: #f0a896;
 }
 
 @theme inline {
@@ -62,22 +74,65 @@
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
   --color-line: var(--border);
+  --color-rule: var(--rule);
   --color-ink: var(--ink);
   --color-ink-2: var(--ink-2);
   --color-ink-3: var(--ink-3);
   --color-accent: var(--accent);
   --color-error-bg: var(--error-bg);
   --color-error-ink: var(--error-ink);
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-sans: "Segoe UI", "Helvetica Neue", Arial, system-ui, sans-serif;
+  --font-serif: "Iowan Old Style", "Charter", "Bitstream Charter", "Sitka Text", Cambria, Georgia, serif;
+  --font-mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", monospace;
 }
 
 body {
   background: var(--bg);
   color: var(--ink);
   font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
 
+@layer base {
+  h1,
+  h2 {
+    font-family: var(--font-serif);
+  }
+}
+
+.serif {
+  font-family: var(--font-serif);
+}
+
 .num {
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* Small-caps section labels, like a printed report. */
+.label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+a:focus-visible,
+button:focus-visible,
+select:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+input,
+select {
+  border-radius: 0;
 }
