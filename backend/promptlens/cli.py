@@ -243,6 +243,81 @@ def demo(
     )
 
 
+team_app = typer.Typer(help="Share anonymized weekly aggregates with a team.", no_args_is_help=True)
+app.add_typer(team_app, name="team")
+
+
+@team_app.command("export")
+def team_export(
+    member: str = typer.Option(..., help="Your name as teammates should see it."),
+    out: Path = typer.Option(None, help="Write to this file (default: print to stdout)."),
+    weeks: int = typer.Option(8, help="How many weeks back to include."),
+    include_projects: bool = typer.Option(
+        False, "--include-projects", help="Share real project names instead of hashes."
+    ),
+) -> None:
+    """Export weekly aggregates. No prompts, code, paths or commit messages are included."""
+    import json
+
+    from promptlens.team import build_export
+
+    cfg = _cfg()
+    with _db(cfg) as db:
+        payload = build_export(db, member, weeks=weeks, include_projects=include_projects)
+    text = json.dumps(payload, indent=2)
+    if out:
+        out.write_text(text, encoding="utf-8")
+        console.print(f"Wrote {len(payload['weeks'])} week(s) to {out}")
+    else:
+        typer.echo(text)
+
+
+@team_app.command("import")
+def team_import(file: Path) -> None:
+    """Import a teammate's export file into this PromptLens."""
+    import json
+
+    from promptlens.team import import_export
+
+    cfg = _cfg()
+    with _db(cfg) as db:
+        n = import_export(db, json.loads(file.read_text(encoding="utf-8")))
+    console.print(f"Imported {n} week(s).")
+
+
+@team_app.command("push")
+def team_push(
+    url: str = typer.Option(..., help="The team lead's PromptLens, e.g. http://10.0.0.5:8000"),
+    member: str = typer.Option(..., help="Your name as teammates should see it."),
+    weeks: int = typer.Option(8),
+    include_projects: bool = typer.Option(False, "--include-projects"),
+) -> None:
+    """Send your export to a teammate's PromptLens (needs PROMPTLENS_TEAM_TOKEN)."""
+    import os
+
+    import httpx
+
+    from promptlens.team import build_export
+
+    token = os.environ.get("PROMPTLENS_TEAM_TOKEN")
+    if not token:
+        console.print("[red]Set PROMPTLENS_TEAM_TOKEN to the token your team lead shared.[/]")
+        raise typer.Exit(1)
+    cfg = _cfg()
+    with _db(cfg) as db:
+        payload = build_export(db, member, weeks=weeks, include_projects=include_projects)
+    r = httpx.post(
+        url.rstrip("/") + "/api/team/snapshots",
+        json=payload,
+        headers={"X-PromptLens-Team-Token": token},
+        timeout=30,
+    )
+    if r.status_code != 200:
+        console.print(f"[red]Push failed ({r.status_code}):[/] {r.text[:300]}")
+        raise typer.Exit(1)
+    console.print(f"Pushed {r.json()['weeks']} week(s) to {url}")
+
+
 @app.command()
 def reset(yes: bool = typer.Option(False, "--yes", help="Skip the confirmation prompt.")) -> None:
     """Drop and recreate all tables."""

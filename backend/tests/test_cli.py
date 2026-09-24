@@ -41,3 +41,17 @@ def test_reset_requires_confirmation(tmp_path):
     assert r.exit_code != 0
     r = runner.invoke(app, ["reset", "--yes"], env=env)
     assert r.exit_code == 0, r.output
+
+
+def test_team_export_and_import(tmp_path):
+    env = env_for(tmp_path)
+    runner.invoke(app, ["init"], env=env)
+    runner.invoke(app, ["ingest"], env=env)
+    out = tmp_path / "alex.json"
+    r = runner.invoke(
+        app, ["team", "export", "--member", "alex", "--weeks", "600", "--out", str(out)], env=env
+    )
+    assert r.exit_code == 0, r.output
+    assert "Fix the login bug" not in out.read_text(encoding="utf-8")
+    r = runner.invoke(app, ["team", "import", str(out)], env=env)
+    assert r.exit_code == 0 and "Imported 1 week" in r.output

@@ -7,6 +7,7 @@ import SessionDetail from './pages/SessionDetail'
 import Sessions from './pages/Sessions'
 import Settings from './pages/Settings'
 import Survival from './pages/Survival'
+import Team from './pages/Team'
 import Tools from './pages/Tools'
 
 const NAV = [
@@ -15,6 +16,7 @@ const NAV = [
   { to: '/survival', label: 'Code survival' },
   { to: '/tools', label: 'Tools' },
   { to: '/coach', label: 'Coach' },
+  { to: '/team', label: 'Team' },
   { to: '/settings', label: 'Settings' },
 ]
 
@@ -98,6 +100,7 @@ export default function App() {
           <Route path="/survival" element={<Survival />} />
           <Route path="/tools" element={<Tools />} />
           <Route path="/coach" element={<Coach />} />
+          <Route path="/team" element={<Team />} />
           <Route path="/settings" element={<Settings />} />
         </Routes>
       </main>
