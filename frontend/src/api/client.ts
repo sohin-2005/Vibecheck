@@ -1,4 +1,6 @@
-export type Filters = { from?: string; to?: string; project_id?: number }
+export type Filters = { from?: string; to?: string; project_id?: number; tool?: string }
+
+export type Source = { tool: string; sessions: number; verified: boolean }
 
 export class ApiError extends Error {}
 
@@ -52,6 +54,7 @@ export type Project = {
 
 export type SessionSummary = {
   id: string
+  tool: string
   title: string | null
   project_id: number | null
   project: string | null
@@ -83,6 +86,7 @@ export type LinkedCommit = {
   lines_added: number
   lines_deleted: number
   survival: Record<string, number | null>
+  ai_survival: Record<string, number>
 }
 
 export type SessionDetail = SessionSummary & {
@@ -120,6 +124,10 @@ export type Survival = {
     commits: number
     not_merged: number
     rate: number | null
+    ai_commits: number
+    ai_lines_total: number
+    ai_lines_surviving: number
+    ai_rate: number | null
   }[]
   groups: Record<string, string | number | null>[]
   lowest_commits: {

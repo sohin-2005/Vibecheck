@@ -33,6 +33,7 @@ SORTS = {
 def session_summary(s: Session, project: str | None) -> dict[str, Any]:
     return {
         "id": s.id,
+        "tool": s.tool,
         "title": s.title,
         "project_id": s.project_id,
         "project": project,
@@ -99,6 +100,11 @@ def session_detail(session_id: str, db: DB = Depends(get_db)) -> dict[str, Any]:
             )
             for r in db.scalars(select(LineSurvival).where(LineSurvival.commit_sha == c.sha))
         }
+        ai_surv = {
+            r.days_after: round(100 * (r.ai_lines_surviving or 0) / r.ai_lines_total, 1)
+            for r in db.scalars(select(LineSurvival).where(LineSurvival.commit_sha == c.sha))
+            if r.status == "ok" and r.ai_lines_total
+        }
         commits.append(
             {
                 "sha": c.sha,
@@ -110,6 +116,7 @@ def session_detail(session_id: str, db: DB = Depends(get_db)) -> dict[str, Any]:
                 "lines_added": c.lines_added,
                 "lines_deleted": c.lines_deleted,
                 "survival": surv,
+                "ai_survival": ai_surv,
             }
         )
     tools = db.execute(

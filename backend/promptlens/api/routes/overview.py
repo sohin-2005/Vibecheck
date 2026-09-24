@@ -75,6 +75,17 @@ def overview(f: Filters = Depends(filters), db: DB = Depends(get_db)) -> dict[st
     }
 
 
+@router.get("/sources")
+def sources(db: DB = Depends(get_db)) -> list[dict[str, Any]]:
+    from promptlens.sources import ADAPTERS
+
+    counts = dict(db.execute(select(Session.tool, func.count()).group_by(Session.tool)).all())
+    return [
+        {"tool": name, "sessions": counts.get(name, 0), "verified": a.verified}
+        for name, a in ADAPTERS.items()
+    ]
+
+
 @router.get("/projects")
 def projects(db: DB = Depends(get_db)) -> list[dict[str, Any]]:
     rows = db.execute(

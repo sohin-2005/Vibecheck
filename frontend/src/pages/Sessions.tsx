@@ -103,7 +103,9 @@ export default function Sessions() {
                         <Link to={`/sessions/${s.id}`} className="font-medium hover:underline">
                           {s.title || s.id.slice(0, 8)}
                         </Link>
-                        <div className="text-xs text-ink-3">{s.project ?? 'unknown project'}</div>
+                        <div className="text-xs text-ink-3">
+                          {s.project ?? 'no project'} · {s.tool}
+                        </div>
                       </Td>
                       <Td className="num text-right">{s.human_turns}</Td>
                       <Td className="num text-right whitespace-nowrap">{fmtMinutes(s.active_minutes)}</Td>

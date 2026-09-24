@@ -127,3 +127,54 @@ def test_human_commits_are_not_analyzed(cfg, db, repo):
     collect_all(cfg, db)
     compute_survival(cfg, db, now=NOW)
     assert surv(db, c) == {}
+
+
+def test_edit_matched_attribution(cfg, db, repo):
+    from promptlens.db.models import ToolCall
+    from promptlens.gitdata.linker import link_all
+
+    write(repo, "keep.py", ["base"])
+    commit_all(repo, "base", T0 - timedelta(days=1))
+    setup(db, repo)
+    ai_code = "def f():\n    return compute(1)\n\ndef g():\n    return compute(2)\n"
+    db.add(ToolCall(session_id="s", tool_use_id="w1", tool_name="Write", file_path=str(repo / "ai.py"),
+                    added_text=ai_code, timestamp=T0 - timedelta(minutes=5)))
+    db.commit()
+    # The commit mixes 4 AI-written lines (+1 blank) with 2 lines the human added.
+    write(repo, "ai.py", ["def f():", "    return compute(1)", "", "def g():", "    return compute(2)",
+                          "# human note here", "HUMAN_CONST = 42"])
+    c = commit_all(repo, "feat" + AI, T0)
+    # Day 2: human changes one AI line and deletes one human line.
+    write(repo, "ai.py", ["def f():", "    return compute(1)", "", "def g():", "    return compute(3)",
+                          "# human note here"])
+    commit_all(repo, "tweak", T0 + timedelta(days=2))
+    collect_all(cfg, db)
+    link_all(cfg, db)
+    compute_survival(cfg, db, now=NOW)
+    s = surv(db, c)
+    assert (s[1].lines_total, s[1].lines_surviving) == (7, 7)
+    assert (s[1].ai_lines_total, s[1].ai_lines_surviving) == (4, 4)
+    assert (s[7].lines_total, s[7].lines_surviving) == (7, 5)
+    assert (s[7].ai_lines_total, s[7].ai_lines_surviving) == (4, 3)
+
+
+def test_no_edit_data_leaves_ai_columns_empty(cfg, db, repo):
+    c = build_history(repo)
+    setup(db, repo)
+    collect_all(cfg, db)
+    compute_survival(cfg, db, now=NOW)
+    assert surv(db, c)[7].ai_lines_total is None
+
+
+def test_attribution_helpers():
+    from collections import Counter
+
+    from promptlens.gitdata.attribution import blame_lines, match_ai, normalize, pool
+
+    assert normalize("   return x  ") == "return x"
+    assert normalize("  }); ") is None and normalize("") is None
+    p = pool(["a = 1\nb = 2\n}", "a = 1"])
+    assert p == Counter({"a = 1": 2, "b = 2": 1})
+    assert match_ai(["a = 1", "a = 1", "a = 1", "c = 3", "}"], p) == Counter({"a = 1": 2})
+    sha = "a" * 40
+    assert blame_lines(f"{sha} 1 1 1\nauthor x\n\tline one\n") == [(sha, "line one")]

@@ -47,7 +47,7 @@ def survival(
         .join(Commit, Commit.sha == LineSurvival.commit_sha)
         .where(Commit.is_merge.is_(False))
     )
-    if f.start or f.end or f.project_id is not None:
+    if f.active:
         linked = select(SessionCommit.commit_sha).where(
             SessionCommit.session_id.in_(_session_ids(db, f))
         )
@@ -56,7 +56,15 @@ def survival(
     names = {p.id: p.name for p in db.scalars(select(Project))}
 
     checkpoints: dict[int, dict[str, int]] = defaultdict(
-        lambda: {"lines_total": 0, "lines_surviving": 0, "commits": 0, "not_merged": 0}
+        lambda: {
+            "lines_total": 0,
+            "lines_surviving": 0,
+            "commits": 0,
+            "not_merged": 0,
+            "ai_lines_total": 0,
+            "ai_lines_surviving": 0,
+            "ai_commits": 0,
+        }
     )
     groups: dict[tuple[str, int], list[int]] = defaultdict(lambda: [0, 0])
     commit_rows: dict[str, dict[str, Any]] = {}
@@ -69,6 +77,10 @@ def survival(
         cp["commits"] += 1
         cp["lines_total"] += ls.lines_total
         cp["lines_surviving"] += ls.lines_surviving
+        if ls.ai_lines_total is not None:
+            cp["ai_commits"] += 1
+            cp["ai_lines_total"] += ls.ai_lines_total
+            cp["ai_lines_surviving"] += ls.ai_lines_surviving or 0
         ok_shas.add(c.sha)
         if group_by == "project":
             g = groups[(names.get(c.project_id, "?"), ls.days_after)]
@@ -108,7 +120,12 @@ def survival(
 
     return {
         "checkpoints": [
-            {"days": d, **v, "rate": _rate(v["lines_surviving"], v["lines_total"])}
+            {
+                "days": d,
+                **v,
+                "rate": _rate(v["lines_surviving"], v["lines_total"]),
+                "ai_rate": _rate(v["ai_lines_surviving"], v["ai_lines_total"]),
+            }
             for d, v in sorted(checkpoints.items())
         ],
         "groups": sorted(by_group.values(), key=lambda g: -(g.get("lines_d7") or 0)),
@@ -123,7 +140,7 @@ def tools(f: Filters = Depends(filters), db: DB = Depends(get_db)) -> list[dict[
         func.count(),
         func.sum(case((ToolCall.is_error.is_(True), 1), else_=0)),
     ).group_by(ToolCall.tool_name)
-    if f.start or f.end or f.project_id is not None:
+    if f.active:
         q = q.where(ToolCall.session_id.in_(_session_ids(db, f)))
     out = [
         {

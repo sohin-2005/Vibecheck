@@ -33,6 +33,7 @@ class Filters:
     start: datetime | None
     end: datetime | None
     project_id: int | None
+    tool: str | None = None
 
     def apply(self, q: Select[Any]) -> Select[Any]:
         if self.start:
@@ -41,18 +42,26 @@ class Filters:
             q = q.where(Session.started_at < self.end)
         if self.project_id is not None:
             q = q.where(Session.project_id == self.project_id)
+        if self.tool:
+            q = q.where(Session.tool == self.tool)
         return q
+
+    @property
+    def active(self) -> bool:
+        return bool(self.start or self.end or self.project_id is not None or self.tool)
 
 
 def filters(
     from_: date | None = Query(None, alias="from"),
     to: date | None = Query(None),
     project_id: int | None = Query(None),
+    tool: str | None = Query(None),
 ) -> Filters:
     return Filters(
         start=datetime.combine(from_, time.min, tzinfo=UTC) if from_ else None,
         end=datetime.combine(to + timedelta(days=1), time.min, tzinfo=UTC) if to else None,
         project_id=project_id,
+        tool=tool,
     )
 
 

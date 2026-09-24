@@ -96,3 +96,11 @@ def test_config_masks_password(client):
 def test_spa_fallback(client):
     assert "app" in client.get("/sessions/abc").text
     assert client.get("/api/nope").status_code == 404
+
+
+def test_sources_and_tool_filter(client):
+    src = {s["tool"]: s for s in client.get("/api/sources").json()}
+    assert src["claude-code"]["sessions"] == 1 and src["claude-code"]["verified"] is True
+    assert src["codex"]["verified"] is False
+    assert client.get("/api/sessions?tool=codex").json()["total"] == 0
+    assert client.get("/api/sessions?tool=claude-code").json()["items"][0]["tool"] == "claude-code"

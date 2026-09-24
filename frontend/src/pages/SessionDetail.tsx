@@ -170,7 +170,8 @@ export default function SessionDetail() {
                         +{c.lines_added} −{c.lines_deleted}
                       </Td>
                       <Td className="num text-right whitespace-nowrap">
-                        {['1', '7', '30'].map((d) => fmtPct(c.survival[d] ?? null)).join(' / ')}
+                        {['1', '7', '30'].map((d) => fmtPct(c.ai_survival[d] ?? c.survival[d] ?? null)).join(' / ')}
+                        {Object.keys(c.ai_survival).length > 0 && <div className="text-[11px] text-ink-3">edit-matched</div>}
                       </Td>
                     </tr>
                   ))}

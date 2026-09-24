@@ -11,8 +11,23 @@ from sqlalchemy import or_, select
 from sqlalchemy.orm import Session as DB
 
 from promptlens.config import Config
-from promptlens.db.models import Commit, CommitFile, LineSurvival, Project, SessionCommit
+from promptlens.db.models import (
+    Commit,
+    CommitFile,
+    LineSurvival,
+    Project,
+    SessionCommit,
+    ToolCall,
+)
+from promptlens.gitdata.attribution import (
+    added_lines_from_diff,
+    blame_lines,
+    match_ai,
+    normalize,
+    pool,
+)
 from promptlens.gitdata.gitcli import GitError, git_ok, run_git
+from promptlens.gitdata.linker import _norm_commit_path, rel_to_repo
 
 log = logging.getLogger(__name__)
 
@@ -65,34 +80,78 @@ def path_changes(repo: str, sha: str, snapshot: str) -> tuple[dict[str, str], se
 
 
 class _BlameCache:
+    """Blame output per (snapshot, path); many commits share a snapshot within a run."""
+
     def __init__(self, repo: str):
         self.repo = repo
-        self._cache: dict[tuple[str, str], Counter[str]] = {}
+        self._cache: dict[tuple[str, str], list[tuple[str, str]]] = {}
 
-    def get(self, snapshot: str, path: str) -> Counter[str]:
+    def lines(self, snapshot: str, path: str) -> list[tuple[str, str]]:
         key = (snapshot, path)
         if key not in self._cache:
             try:
                 out = run_git(
                     self.repo, "blame", "--porcelain", "-M", "-C", "-w", snapshot, "--", path
                 )
-                self._cache[key] = count_blame(out)
+                self._cache[key] = blame_lines(out)
             except GitError:
-                self._cache[key] = Counter()
+                self._cache[key] = []
         return self._cache[key]
 
 
+def commit_ai_lines(
+    db: DB, repo: str, sha: str, files: list[CommitFile]
+) -> dict[str, Counter[str]] | None:
+    """Per file, the commit's added lines that linked sessions' edit tools wrote.
+
+    None when no linked session recorded any edit content (e.g. trailer-only commits).
+    """
+    sessions = select(SessionCommit.session_id).where(SessionCommit.commit_sha == sha)
+    edits = db.execute(
+        select(ToolCall.file_path, ToolCall.added_text).where(
+            ToolCall.session_id.in_(sessions),
+            ToolCall.added_text.is_not(None),
+            ToolCall.file_path.is_not(None),
+        )
+    ).all()
+    if not edits:
+        return None
+    pools: dict[str, list[str]] = {}
+    for path, text in edits:
+        pools.setdefault(rel_to_repo(path, repo), []).append(text)
+    out: dict[str, Counter[str]] = {}
+    for f in files:
+        texts = pools.get(_norm_commit_path(f.file_path))
+        if not texts:
+            out[f.file_path] = Counter()
+            continue
+        diff = run_git(repo, "show", "--format=", "-U0", "--no-color", sha, "--", f.file_path)
+        out[f.file_path] = match_ai(added_lines_from_diff(diff), pool(texts))
+    return out
+
+
 def survival_for(
-    repo: str, sha: str, snapshot: str, files: list[CommitFile], cache: _BlameCache
-) -> int:
+    repo: str,
+    sha: str,
+    snapshot: str,
+    files: list[CommitFile],
+    cache: _BlameCache,
+    ai: dict[str, Counter[str]] | None = None,
+) -> tuple[int, int | None]:
+    """(surviving lines, surviving edit-matched AI lines or None)."""
     renames, deleted = path_changes(repo, sha, snapshot)
     surviving = 0
+    ai_surviving = 0 if ai is not None else None
     for f in files:
         if f.file_path in deleted:
             continue
         path = renames.get(f.file_path, f.file_path)
-        surviving += min(cache.get(snapshot, path)[sha], f.lines_added)
-    return surviving
+        mine = [content for s, content in cache.lines(snapshot, path) if s == sha]
+        surviving += min(len(mine), f.lines_added)
+        if ai is not None and ai.get(f.file_path):
+            alive = Counter(n for line in mine if (n := normalize(line)))
+            ai_surviving += sum((alive & ai[f.file_path]).values())  # type: ignore[operator]
+    return surviving, ai_surviving
 
 
 def compute_survival(cfg: Config, db: DB, now: datetime | None = None) -> int:
@@ -118,15 +177,27 @@ def compute_survival(cfg: Config, db: DB, now: datetime | None = None) -> int:
             branches[repo] = default_branch(repo)
             caches[repo] = _BlameCache(repo)
         branch = branches[repo]
-        files = db.scalars(select(CommitFile).where(CommitFile.commit_sha == c.sha)).all()
-        for d in cfg.survival_checkpoints_days:
+        files = list(db.scalars(select(CommitFile).where(CommitFile.commit_sha == c.sha)))
+        due = [
+            d
+            for d in cfg.survival_checkpoints_days
+            if (c.sha, d) not in done and c.authored_at + timedelta(days=d) <= now
+        ]
+        if not due or branch is None:
+            continue
+        try:
+            ai = commit_ai_lines(db, repo, c.sha, files)
+        except GitError as e:
+            log.warning("edit matching failed for %s: %s", c.sha[:8], e)
+            ai = None
+        ai_total = sum(sum(v.values()) for v in ai.values()) if ai is not None else None
+        for d in due:
             at = c.authored_at + timedelta(days=d)
-            if (c.sha, d) in done or at > now or branch is None:
-                continue
             row = LineSurvival(
                 commit_sha=c.sha,
                 days_after=d,
                 lines_total=sum(f.lines_added for f in files),
+                ai_lines_total=ai_total,
                 computed_at=now,
             )
             try:
@@ -136,7 +207,9 @@ def compute_survival(cfg: Config, db: DB, now: datetime | None = None) -> int:
                     row.snapshot_sha = snap or None
                 else:
                     row.snapshot_sha = snap
-                    row.lines_surviving = survival_for(repo, c.sha, snap, list(files), caches[repo])
+                    row.lines_surviving, row.ai_lines_surviving = survival_for(
+                        repo, c.sha, snap, files, caches[repo], ai
+                    )
             except GitError as e:
                 log.warning("survival failed for %s@%sd: %s", c.sha[:8], d, e)
                 continue

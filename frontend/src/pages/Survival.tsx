@@ -23,7 +23,7 @@ export default function Survival() {
     <div>
       <PageHeader
         title="Code survival"
-        subtitle="Of the lines AI-linked commits added, how many still exist on your default branch after 1, 7 and 30 days (git blame, whitespace ignored, renames followed)."
+        subtitle="Of the lines AI-linked commits added, how many still exist on your default branch after 1, 7 and 30 days. Edit-matched counts only lines the AI's edit tools actually wrote, so your own changes in the same commit don't count."
       />
       {!d.checkpoints.length ? (
         <Card>
@@ -40,12 +40,20 @@ export default function Survival() {
               return (
                 <Kpi
                   key={days}
-                  label={`After ${days} day${days > 1 ? 's' : ''}`}
-                  value={fmtPct(c?.rate)}
+                  label={`After ${days} day${days > 1 ? 's' : ''}${c?.ai_commits ? ' · edit-matched' : ''}`}
+                  value={fmtPct(c?.ai_commits ? c.ai_rate : c?.rate)}
                   hint={
-                    c
-                      ? `${fmtInt(c.lines_surviving)} of ${fmtInt(c.lines_total)} lines · ${c.commits} commits${c.not_merged ? ` · ${c.not_merged} never merged` : ''}`
-                      : 'Not due yet'
+                    c ? (
+                      <>
+                        {c.ai_commits
+                          ? `${fmtInt(c.ai_lines_surviving)} of ${fmtInt(c.ai_lines_total)} AI-written lines in ${c.ai_commits} commits. `
+                          : ''}
+                        Whole-commit: {fmtPct(c.rate)} of {fmtInt(c.lines_total)} lines
+                        {c.not_merged ? ` · ${c.not_merged} never merged` : ''}
+                      </>
+                    ) : (
+                      'Not due yet'
+                    )
                   }
                 />
               )

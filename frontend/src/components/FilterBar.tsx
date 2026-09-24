@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { get, type Project } from '../api/client'
+import { get, type Project, type Source } from '../api/client'
 import { useFilters } from '../lib/filters'
 import { selectCls } from './ui'
 
@@ -15,6 +15,8 @@ const iso = (d: Date) => d.toISOString().slice(0, 10)
 export default function FilterBar() {
   const { filters, setFilters } = useFilters()
   const projects = useQuery({ queryKey: ['projects'], queryFn: () => get<Project[]>('/projects') })
+  const sources = useQuery({ queryKey: ['sources'], queryFn: () => get<Source[]>('/sources') })
+  const usedSources = (sources.data ?? []).filter((s) => s.sessions > 0)
 
   const activePreset = PRESETS.find((p) => {
     if (p.days === null) return !filters.from && !filters.to
@@ -61,7 +63,21 @@ export default function FilterBar() {
           className={selectCls}
         />
       </div>
-      <span className="label ml-auto">Project</span>
+      <span className="label ml-auto">Tool</span>
+      <select
+        aria-label="Tool"
+        value={filters.tool ?? ''}
+        onChange={(e) => setFilters({ ...filters, tool: e.target.value || undefined })}
+        className={selectCls}
+      >
+        <option value="">All tools</option>
+        {usedSources.map((s) => (
+          <option key={s.tool} value={s.tool}>
+            {s.tool} ({s.sessions}){s.verified ? '' : ' · experimental'}
+          </option>
+        ))}
+      </select>
+      <span className="label">Project</span>
       <select
         aria-label="Project"
         value={filters.project_id ?? ''}
