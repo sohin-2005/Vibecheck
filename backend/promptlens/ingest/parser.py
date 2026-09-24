@@ -41,6 +41,7 @@ class ToolUse:
     name: str
     file_path: str | None = None
     command: str | None = None
+    added_text: str | None = None  # code this call wrote, for edit-matched attribution
 
 
 @dataclass
@@ -123,7 +124,21 @@ def _parse_tool_use(b: dict[str, Any]) -> ToolUse | None:
         tu.file_path = _str(inp.get("file_path")) or _str(inp.get("notebook_path"))
     if name in COMMAND_TOOLS:
         tu.command = _str(inp.get("command"))
+    tu.added_text = _added_text(name, inp)
     return tu
+
+
+def _added_text(name: str, inp: dict[str, Any]) -> str | None:
+    if name == "Edit":
+        return _str(inp.get("new_string"))
+    if name == "Write":
+        return _str(inp.get("content"))
+    if name == "NotebookEdit":
+        return _str(inp.get("new_source"))
+    if name == "MultiEdit" and isinstance(inp.get("edits"), list):
+        parts = [e.get("new_string") for e in inp["edits"] if isinstance(e, dict)]
+        return "\n".join(p for p in parts if isinstance(p, str)) or None
+    return None
 
 
 def _classify_user(

@@ -39,12 +39,22 @@ class ModelUsage:
 
 
 def dedupe_usage(rows: Iterable[UsageRow]) -> dict[str, ModelUsage]:
-    """Sum usage per model, counting each API message id once (streamed lines repeat usage)."""
+    """Sum usage per model, counting each API message id once (streamed lines repeat usage).
+
+    When rows sharing an id differ (e.g. a text row plus a usage-only row), the one with the
+    most tokens wins.
+    """
     unique: dict[str, UsageRow] = {}
     anonymous: list[UsageRow] = []
+
+    def total(r: UsageRow) -> int:
+        return r.input + r.output + r.cache_write + r.cache_read
+
     for r in rows:
         if r.api_message_id:
-            unique[r.api_message_id] = r
+            cur = unique.get(r.api_message_id)
+            if cur is None or total(r) >= total(cur):
+                unique[r.api_message_id] = r
         else:
             anonymous.append(r)
     out: dict[str, ModelUsage] = {}

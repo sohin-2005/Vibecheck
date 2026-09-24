@@ -14,6 +14,7 @@ class SessionFile:
     path: Path
     size: int
     mtime: datetime
+    tool: str = "claude-code"
 
 
 def discover_files(root: Path) -> list[SessionFile]:
@@ -26,7 +27,12 @@ def discover_files(root: Path) -> list[SessionFile]:
     return out
 
 
-def plan_file(f: SessionFile, state: IngestState | None) -> int | None:
+def stat_file(p: Path, tool: str) -> SessionFile:
+    st = p.stat()
+    return SessionFile(p, st.st_size, datetime.fromtimestamp(st.st_mtime, UTC), tool)
+
+
+def plan_file(f: SessionFile, state: IngestState | None, incremental: bool = True) -> int | None:
     """Return the line offset to resume from, or None if the file is unchanged.
 
     0 means process from scratch (new file, or it shrank / went back in time).
@@ -35,6 +41,6 @@ def plan_file(f: SessionFile, state: IngestState | None) -> int | None:
         return 0
     if f.size == state.file_size and f.mtime == state.mtime:
         return None
-    if f.size < state.file_size or f.mtime < state.mtime:
+    if not incremental or f.size < state.file_size or f.mtime < state.mtime:
         return 0
     return state.lines_processed

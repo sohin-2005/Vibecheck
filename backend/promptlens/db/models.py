@@ -73,6 +73,7 @@ class Session(Base):
     __tablename__ = "sessions"
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
     project_id: Mapped[int | None] = mapped_column(ForeignKey("projects.id"), nullable=True)
+    tool: Mapped[str] = mapped_column(Text, default="claude-code", server_default="claude-code")
     title: Mapped[str | None] = mapped_column(Text, nullable=True)
     started_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)
     ended_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)
@@ -136,6 +137,8 @@ class ToolCall(Base):
     tool_name: Mapped[str] = mapped_column(Text)
     file_path: Mapped[str | None] = mapped_column(Text, nullable=True)
     command: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Code the tool wrote (Edit new_string / Write content / patch "+" lines), redacted.
+    added_text: Mapped[str | None] = mapped_column(Text, nullable=True)
     is_error: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
     is_sidechain: Mapped[bool] = mapped_column(Boolean, default=False)
     timestamp: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)
@@ -179,6 +182,9 @@ class LineSurvival(Base):
     snapshot_sha: Mapped[str | None] = mapped_column(Text, nullable=True)
     lines_total: Mapped[int] = mapped_column(Integer, default=0)
     lines_surviving: Mapped[int] = mapped_column(Integer, default=0)
+    # Edit-matched: only added lines that match code the AI's edit tools wrote.
+    ai_lines_total: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    ai_lines_surviving: Mapped[int | None] = mapped_column(Integer, nullable=True)
     computed_at: Mapped[datetime] = mapped_column(UTCDateTime)
 
 
@@ -206,6 +212,26 @@ class PromptScore(Base):
     category: Mapped[str] = mapped_column(Text)
     suggestion: Mapped[str] = mapped_column(Text, default="")
     created_at: Mapped[datetime] = mapped_column(UTCDateTime)
+
+
+class PromptRewrite(Base):
+    __tablename__ = "prompt_rewrites"
+    message_id: Mapped[int] = mapped_column(ForeignKey("messages.id"), primary_key=True)
+    method: Mapped[str] = mapped_column(Text)  # llm | template
+    model_used: Mapped[str | None] = mapped_column(Text, nullable=True)
+    rewrite: Mapped[str] = mapped_column(Text)
+    changes: Mapped[list[str]] = mapped_column(JSONType, default=list)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime)
+
+
+class TeamSnapshot(Base):
+    """Anonymized weekly aggregates pushed or imported from a teammate's PromptLens."""
+
+    __tablename__ = "team_snapshots"
+    member: Mapped[str] = mapped_column(Text, primary_key=True)
+    week: Mapped[str] = mapped_column(Text, primary_key=True)  # ISO week, e.g. 2026-W39
+    payload: Mapped[dict[str, Any]] = mapped_column(JSONType)
+    received_at: Mapped[datetime] = mapped_column(UTCDateTime)
 
 
 class Insight(Base):

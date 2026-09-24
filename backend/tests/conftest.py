@@ -26,7 +26,13 @@ def db(db_url):
 
 @pytest.fixture
 def cfg(db_url, tmp_path) -> Config:
-    c = Config(database_url=db_url, claude_projects_dir=tmp_path / "projects")
+    c = Config(
+        database_url=db_url,
+        claude_projects_dir=tmp_path / "projects",
+        antigravity_dirs=[],
+        codex_dir=tmp_path / "no-codex",
+        aider_dirs=[],
+    )
     c.claude_projects_dir.mkdir()
     return c
 

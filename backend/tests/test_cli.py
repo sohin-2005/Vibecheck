@@ -16,6 +16,7 @@ def env_for(tmp_path):
         "PROMPTLENS_CONFIG": str(tmp_path / "config.toml"),
         "PROMPTLENS_DATABASE_URL": f"sqlite:///{(tmp_path / 'cli.db').as_posix()}",
         "PROMPTLENS_CLAUDE_PROJECTS_DIR": str(tmp_path / "projects"),
+        "PROMPTLENS_TOOLS": "claude-code",
     }
 
 

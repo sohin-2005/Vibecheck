@@ -1,0 +1,12 @@
+{"timestamp": "2026-09-20T10:00:00.000Z", "type": "session_meta", "payload": {"id": "cx-123", "cwd": "/work/api", "cli_version": "0.40.0", "git": {"branch": "main"}}}
+{"timestamp": "2026-09-20T10:00:00.100Z", "type": "turn_context", "payload": {"cwd": "/work/api", "model": "gpt-5-codex"}}
+{"timestamp": "2026-09-20T10:00:00.200Z", "type": "response_item", "payload": {"type": "message", "role": "user", "content": [{"type": "input_text", "text": "<environment_context>\n  <cwd>/work/api</cwd>\n</environment_context>"}]}}
+{"timestamp": "2026-09-20T10:00:01.000Z", "type": "response_item", "payload": {"type": "message", "role": "user", "content": [{"type": "input_text", "text": "Add input validation to api/users.py so empty names return 400"}]}}
+{"timestamp": "2026-09-20T10:00:05.000Z", "type": "response_item", "payload": {"type": "function_call", "name": "shell", "arguments": "{\"command\":[\"bash\",\"-lc\",\"pytest -q\"]}", "call_id": "call_1"}}
+{"timestamp": "2026-09-20T10:00:09.000Z", "type": "response_item", "payload": {"type": "function_call_output", "call_id": "call_1", "output": "{\"output\":\"1 failed\",\"metadata\":{\"exit_code\":1}}"}}
+{"timestamp": "2026-09-20T10:00:10.000Z", "type": "response_item", "payload": {"type": "custom_tool_call", "name": "apply_patch", "call_id": "call_2", "input": "*** Begin Patch\n*** Update File: api/users.py\n@@\n-def create(name):\n+def create(name):\n+    if not name:\n+        raise BadRequest('name required')\n*** End Patch"}}
+{"timestamp": "2026-09-20T10:00:11.000Z", "type": "response_item", "payload": {"type": "custom_tool_call_output", "call_id": "call_2", "output": "{\"output\":\"Success\",\"metadata\":{\"exit_code\":0}}"}}
+{"timestamp": "2026-09-20T10:00:12.000Z", "type": "response_item", "payload": {"type": "message", "role": "assistant", "content": [{"type": "output_text", "text": "Added validation."}]}}
+{"timestamp": "2026-09-20T10:00:12.500Z", "type": "event_msg", "payload": {"type": "token_count", "info": {"last_token_usage": {"input_tokens": 1200, "cached_input_tokens": 1000, "output_tokens": 80, "reasoning_output_tokens": 20}}}}
+{"timestamp": "2026-09-20T10:01:00.000Z", "type": "event_msg", "payload": {"type": "turn_aborted", "reason": "interrupted"}}
+{"timestamp": "2026-09-20T10:01:30.000Z", "type": "future_event_type", "payload": {"whatever": true}}

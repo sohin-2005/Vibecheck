@@ -16,10 +16,11 @@ from promptlens.config import Config
 from promptlens.db.models import IngestState, Message, Project, RawEvent, Session, ToolCall
 from promptlens.db.upsert import upsert
 from promptlens.gitdata.gitcli import resolve_repo_root
-from promptlens.ingest.discover import SessionFile, discover_files, plan_file
-from promptlens.ingest.parser import Event, iter_events
+from promptlens.ingest.discover import SessionFile, plan_file
+from promptlens.ingest.parser import Event
 from promptlens.ingest.redact import Redactor
 from promptlens.metrics.session_metrics import recompute_session
+from promptlens.sources import ADAPTERS, discover_all
 
 log = logging.getLogger(__name__)
 
@@ -43,8 +44,11 @@ def complete_line_count(path: Path) -> int:
 
 
 class _FileLoader:
-    def __init__(self, db: DB, cfg: Config, redactor: Redactor, projects: dict[str, int]):
+    def __init__(
+        self, db: DB, cfg: Config, redactor: Redactor, projects: dict[str, int], tool: str
+    ):
         self.db, self.cfg, self.redactor, self.projects = db, cfg, redactor, projects
+        self.tool = tool
         self.interrupt_re = re.compile(cfg.interrupt_pattern)
         self.sessions: dict[str, dict[str, Any]] = {}
         self.raw: list[dict[str, Any]] = []
@@ -68,7 +72,7 @@ class _FileLoader:
         sid = ev.session_id or fallback_sid
         if sid in self.skipped_sessions:
             return
-        info = self.sessions.setdefault(sid, {})
+        info = self.sessions.setdefault(sid, {"tool": self.tool})
         if ev.cwd and "project_id" not in info:
             pid = self.project_id(ev.cwd)
             if pid is None:
@@ -126,6 +130,7 @@ class _FileLoader:
                     "tool_name": tu.name,
                     "file_path": tu.file_path,
                     "command": self.redactor.redact(tu.command),
+                    "added_text": self.redactor.redact(tu.added_text),
                     "is_error": None,
                     "is_sidechain": ev.is_sidechain,
                     "timestamp": ev.timestamp,
@@ -160,7 +165,15 @@ class _FileLoader:
         for t in self.tools:
             if t["tool_use_id"] in self.results:
                 t["is_error"] = self.results.pop(t["tool_use_id"])
-        tool_cols = ["tool_name", "file_path", "command", "is_error", "is_sidechain", "timestamp"]
+        tool_cols = [
+            "tool_name",
+            "file_path",
+            "command",
+            "added_text",
+            "is_error",
+            "is_sidechain",
+            "timestamp",
+        ]
         upsert(db, ToolCall, self.tools, keys=["tool_use_id"], update=tool_cols)
         # results whose tool_use arrived in an earlier run
         for flag in (True, False):
@@ -174,11 +187,13 @@ class _FileLoader:
 def ingest_file(
     db: DB, cfg: Config, f: SessionFile, start: int, projects: dict[str, int]
 ) -> tuple[int, set[str]]:
+    adapter = ADAPTERS[f.tool]
     loader = _FileLoader(
-        db, cfg, Redactor(cfg.redaction_enabled, cfg.redaction_extra_patterns), projects
+        db, cfg, Redactor(cfg.redaction_enabled, cfg.redaction_extra_patterns), projects, f.tool
     )
-    end = complete_line_count(f.path)
-    for n, ev in iter_events(f.path, start_line=start, interrupt_re=loader.interrupt_re):
+    # JSONL tools may have a partial last line still being written; others are read whole.
+    end = complete_line_count(f.path) if adapter.incremental else 10**12
+    for n, ev in adapter.iter_events(f.path, start_line=start, interrupt_re=loader.interrupt_re):
         if n > end:
             break
         loader.add(f.path, n, ev, fallback_sid=f.path.stem)
@@ -191,24 +206,25 @@ def ingest_file(
                 "file_path": str(f.path),
                 "file_size": f.size,
                 "mtime": f.mtime,
-                "lines_processed": end,
+                "lines_processed": min(end, complete_line_count(f.path)),
                 "updated_at": datetime.now(UTC),
             }
         ],
         keys=["file_path"],
         update=["file_size", "mtime", "lines_processed", "updated_at"],
     )
-    return end - start, set(loader.sessions)
+    return min(end, complete_line_count(f.path)) - start, set(loader.sessions)
 
 
 def ingest_all(cfg: Config, db: DB, progress: Any = None) -> IngestResult:
     res = IngestResult()
-    files = discover_files(cfg.claude_projects_dir)
+    projects = {p.cwd: p.id for p in db.scalars(select(Project))}
+    repo_dirs = [Path(r) for r in {p.repo_root for p in db.scalars(select(Project)) if p.repo_root}]
+    files = discover_all(cfg, repo_dirs)
     res.files_seen = len(files)
     states = {s.file_path: s for s in db.scalars(select(IngestState))}
-    projects = {p.cwd: p.id for p in db.scalars(select(Project))}
     for f in files:
-        start = plan_file(f, states.get(str(f.path)))
+        start = plan_file(f, states.get(str(f.path)), ADAPTERS[f.tool].incremental)
         if start is None:
             continue
         try:

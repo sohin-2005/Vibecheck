@@ -18,6 +18,13 @@ claude_projects_dir = "~/.claude/projects"
 include_sidechains = true
 # Substrings of project cwd values to skip entirely (e.g. employer repos).
 ignore_projects = []
+# Which AI coding tools to read. claude-code and antigravity are verified against real logs;
+# codex and aider are experimental (built from their documented formats).
+tools = ["claude-code", "antigravity", "codex", "aider"]
+antigravity_dirs = ["~/.gemini/antigravity/brain", "~/.gemini/antigravity-ide/brain"]
+codex_dir = "~/.codex/sessions"
+# Aider keeps .aider.chat.history.md in each repo; known project repos are checked automatically.
+aider_dirs = []
 
 [git]
 commit_link_window_minutes = 30
@@ -69,6 +76,17 @@ class Config:
     )
     include_sidechains: bool = True
     ignore_projects: list[str] = field(default_factory=list)
+    tools: list[str] = field(
+        default_factory=lambda: ["claude-code", "antigravity", "codex", "aider"]
+    )
+    antigravity_dirs: list[Path] = field(
+        default_factory=lambda: [
+            Path("~/.gemini/antigravity/brain").expanduser(),
+            Path("~/.gemini/antigravity-ide/brain").expanduser(),
+        ]
+    )
+    codex_dir: Path = field(default_factory=lambda: Path("~/.codex/sessions").expanduser())
+    aider_dirs: list[Path] = field(default_factory=list)
     commit_link_window_minutes: int = 30
     survival_checkpoints_days: list[int] = field(default_factory=lambda: [1, 7, 30])
     ignore_globs: list[str] = field(
@@ -119,6 +137,12 @@ def _apply_toml(cfg: Config, data: dict[str, Any]) -> None:
         cfg.claude_projects_dir = Path(src["claude_projects_dir"]).expanduser()
     cfg.include_sidechains = src.get("include_sidechains", cfg.include_sidechains)
     cfg.ignore_projects = list(src.get("ignore_projects", cfg.ignore_projects))
+    cfg.tools = list(src.get("tools", cfg.tools))
+    if "antigravity_dirs" in src:
+        cfg.antigravity_dirs = [Path(d).expanduser() for d in src["antigravity_dirs"]]
+    if "codex_dir" in src:
+        cfg.codex_dir = Path(src["codex_dir"]).expanduser()
+    cfg.aider_dirs = [Path(d).expanduser() for d in src.get("aider_dirs", [])]
     cfg.commit_link_window_minutes = int(
         git.get("commit_link_window_minutes", cfg.commit_link_window_minutes)
     )
@@ -149,6 +173,8 @@ def _apply_env(cfg: Config) -> None:
         cfg.database_url = v
     if v := env.get("PROMPTLENS_CLAUDE_PROJECTS_DIR"):
         cfg.claude_projects_dir = Path(v).expanduser()
+    if v := env.get("PROMPTLENS_TOOLS"):
+        cfg.tools = [t.strip() for t in v.split(",") if t.strip()]
     if v := env.get("PROMPTLENS_LLM_PROVIDER"):
         cfg.llm_provider = v
     if v := env.get("PROMPTLENS_LLM_MODEL"):
