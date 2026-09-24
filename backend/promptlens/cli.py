@@ -145,6 +145,23 @@ def digest(days: int = typer.Option(7, help="Look back this many days.")) -> Non
 
 
 @app.command()
+def findings(
+    out: Path = typer.Option(None, help="Write the draft to this file instead of printing it."),
+) -> None:
+    """Draft the README's "What I learned from my own data" section from your numbers."""
+    from promptlens.insights.findings import draft_findings
+
+    cfg = _cfg()
+    with _db(cfg) as db:
+        md = draft_findings(db, cfg)
+    if out:
+        out.write_text(md, encoding="utf-8")
+        console.print(f"Wrote {out}")
+    else:
+        typer.echo(md)
+
+
+@app.command()
 def insights() -> None:
     """Recompute insights from current data."""
     from promptlens.insights.analysis import compute_insights

@@ -35,10 +35,12 @@ from promptlens.gitdata.linker import _update_session_commit_fields
 from promptlens.insights.analysis import compute_insights
 from promptlens.metrics.session_metrics import recompute_session
 from promptlens.metrics.struggle import compute_struggle
+from promptlens.team import build_export, import_export
 
 DEMO_DB_PATH = Path("~/.promptlens/demo.db").expanduser()
 DEMO_DB_URL = f"sqlite:///{DEMO_DB_PATH.as_posix()}"
 DEMO_MODEL = "demo-model"
+DEMO_TOOLS = ["claude-code", "codex", "aider", "antigravity"]
 # Invented prices so the demo can show cost; not any real model's pricing.
 DEMO_PRICES = {DEMO_MODEL: ModelPrice(input=3.0, output=15.0, cache_write=3.75, cache_read=0.3)}
 
@@ -133,6 +135,7 @@ def _session(db: DB, rng: random.Random, i: int, now: datetime, pid: int, proj: 
         started_at=t,
         git_branch=rng.choice(["main", "main", f"feat/{name}-{i}"]),
         cc_version="2.1.0",
+        tool=rng.choices(DEMO_TOOLS, [6, 2, 1, 1])[0],
         models=[],
     )
     db.add(s)
@@ -228,6 +231,7 @@ def _session(db: DB, rng: random.Random, i: int, now: datetime, pid: int, proj: 
                 db.add(CommitFile(commit_sha=sha, file_path=f, lines_added=share, lines_deleted=0))
         db.add(SessionCommit(session_id=sid, commit_sha=sha, link_method="trailer", confidence=0.9))
         keep = rng.uniform(0.8, 0.98) if good else rng.uniform(0.4, 0.85)
+        ai_total = round(added * rng.uniform(0.7, 0.95))
         for d in (1, 7, 30):
             if t + timedelta(days=d) > now:
                 continue
@@ -240,9 +244,30 @@ def _session(db: DB, rng: random.Random, i: int, now: datetime, pid: int, proj: 
                     snapshot_sha=sha,
                     lines_total=added,
                     lines_surviving=round(added * min(1.0, decay + 0.02)),
+                    ai_lines_total=ai_total,
+                    ai_lines_surviving=round(ai_total * min(1.0, decay)),
                     computed_at=now,
                 )
             )
+
+
+def _demo_team(db: DB, rng: random.Random, now: datetime) -> None:
+    """You plus two invented teammates whose weeks are jittered copies of yours."""
+    mine = build_export(db, "you", weeks=9, now=now)
+    import_export(db, mine)
+    for member, bias in (("sam", 0.8), ("priya", 1.25)):
+        weeks = []
+        for w in mine["weeks"]:
+            j = dict(w)
+            j["sessions"] = max(1, round(w["sessions"] * bias * rng.uniform(0.7, 1.3)))
+            j["active_hours"] = round(w["active_hours"] * bias * rng.uniform(0.7, 1.3), 1)
+            for k in ("commit_rate", "survival_7d", "pct_context", "tool_error_rate"):
+                if w[k] is not None:
+                    j[k] = round(min(100.0, max(0.0, w[k] * rng.uniform(0.8, 1.2))), 1)
+            if w["median_struggle"] is not None:
+                j["median_struggle"] = round(w["median_struggle"] / bias, 2)
+            weeks.append(j)
+        import_export(db, {**mine, "member": member, "weeks": weeks})
 
 
 def build_demo(url: str = DEMO_DB_URL, n_sessions: int = 120, seed: int = 42) -> str:
@@ -282,6 +307,7 @@ def build_demo(url: str = DEMO_DB_URL, n_sessions: int = 120, seed: int = 42) ->
         compute_struggle(db, cfg)
         compute_features(db)
         found = compute_insights(db)
+        _demo_team(db, rng, now)
     finally:
         db.close()
     return f"Demo database with {n_sessions} sessions and {len(found)} insights at {url}"

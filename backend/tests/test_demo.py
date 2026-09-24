@@ -16,3 +16,22 @@ def test_demo_builds_a_complete_dataset(tmp_path):
     s = db.scalars(select(Session)).first()
     assert s.est_cost_usd is not None and s.struggle_score is not None and s.ended_at is not None
     db.close()
+
+
+def test_demo_covers_new_features(tmp_path):
+    from promptlens.db.models import TeamSnapshot
+
+    url = f"sqlite:///{(tmp_path / 'demo2.db').as_posix()}"
+    build_demo(url, n_sessions=60)
+    db = make_sessionmaker(url)()
+    assert len({s.tool for s in db.scalars(select(Session))}) >= 3
+    assert (
+        db.scalar(
+            select(func.count())
+            .select_from(LineSurvival)
+            .where(LineSurvival.ai_lines_total.is_not(None))
+        )
+        > 0
+    )
+    assert {t.member for t in db.scalars(select(TeamSnapshot))} == {"you", "sam", "priya"}
+    db.close()

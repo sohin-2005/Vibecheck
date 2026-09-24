@@ -1,6 +1,6 @@
 # PromptLens
 
-Local-first analytics for Claude Code sessions. Full spec: docs/SPEC.md. Session format notes: docs/FORMAT_NOTES.md.
+Local-first analytics for AI coding sessions (Claude Code, Antigravity; Codex CLI and Aider experimental). Full spec: docs/SPEC.md. Session format notes: docs/FORMAT_NOTES.md.
 
 ## Commands
 - Start DB: `docker compose up -d`
@@ -15,6 +15,8 @@ Local-first analytics for Claude Code sessions. Full spec: docs/SPEC.md. Session
 - Never hardcode model prices or API keys. Prices come from config; keys from env vars.
 - All text is redacted before it is written to the database.
 - Parser must never crash on unknown fields or event types.
+- New AI tools = a new adapter in `backend/promptlens/sources/` plus a fixture and tests. Mark it `verified = False` until checked against real logs.
+- Team exports must never contain text, paths, commands or ids; `tests/test_team.py` guards this.
 - Use `subprocess` with argument lists (no shell=True) for git commands.
 - Keep functions small; prefer pure functions for metrics so they're easy to test.
 - Models must work on both PostgreSQL (prod) and SQLite (tests, demo): use the portable types in `db/models.py`.

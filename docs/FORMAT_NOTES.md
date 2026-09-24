@@ -45,3 +45,26 @@ Content is either a string or a list of `text` blocks.
 
 - `gitBranch` can be `HEAD` (detached) or empty.
 - Synthetic assistant messages (`model: "<synthetic>"`, API errors) exist; they carry zero usage.
+
+---
+
+# Other tools
+
+## Google Antigravity (verified, September 2026)
+
+- `~/.gemini/antigravity/brain/<conversation-id>/.system_generated/logs/transcript_full.jsonl` (also `transcript.jsonl`, identical in the one sample; only `_full` is read). `~/.gemini/antigravity-ide/brain` may hold more.
+- One JSON object per step: `step_index`, `source` (`USER_EXPLICIT` | `MODEL`), `type`, `status`, `created_at`, `content`.
+- Seen types: `USER_INPUT` (content wraps the prompt in `<USER_REQUEST>…</USER_REQUEST>` plus metadata blocks) and `PLANNER_RESPONSE`. Other model step types are assumed to be tool steps; `status` ERROR/FAILED marks a failure.
+- No working directory, git branch, model id or token usage is logged. Conversations are also kept in `conversations/<id>.db` (SQLite, not read).
+
+## OpenAI Codex CLI (experimental, not yet verified)
+
+Built from the documented rollout format: `~/.codex/sessions/YYYY/MM/DD/rollout-*.jsonl`, lines `{"timestamp", "type", "payload"}` with `session_meta` (id, cwd, git, cli_version), `turn_context` (cwd, model), `response_item` (message / function_call / custom_tool_call / *_output) and `event_msg` (`token_count` with `info.last_token_usage`, `turn_aborted`). User messages starting with `<environment_context>` or `<user_instructions>` are treated as meta. `apply_patch` inputs give per-file added lines.
+
+## Aider (experimental, not yet verified)
+
+`.aider.chat.history.md` in a repo: `# aider chat started at <local time>` starts a session, `#### ` lines are prompts, `> ` lines are status output (`Tokens: 2.4k sent, 310 received`, `Applied edit to <file>`, `Commit <sha> …`), and everything else is the model reply, including SEARCH/REPLACE blocks. Only session start times exist.
+
+## Not supported
+
+Cursor and Windsurf keep chats in VS Code-style `state.vscdb` SQLite blobs with undocumented, frequently changing schemas. Copilot doesn't store transcripts locally in a readable form.
