@@ -136,7 +136,8 @@ def _tips(
         )
     if "tool_errors" in kinds and failed_tool in ("Bash", "PowerShell", "shell", "RUN_COMMAND"):
         tips.append(
-            "Tell the AI the exact command to build or test your project instead of letting it guess."
+            "Tell the AI the exact command to build or test your project, instead of "
+            "letting it guess."
         )
     if "repeated_edits" in kinds:
         tips.append("For a change that keeps touching one file, ask for a short plan before edits.")
