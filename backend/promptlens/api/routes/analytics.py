@@ -5,12 +5,13 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import Any, Literal
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import case, func, select
 from sqlalchemy.orm import Session as DB
 
-from promptlens.api.deps import Filters, filters, get_db
+from promptlens.api.deps import Filters, filters, get_cfg, get_db
 from promptlens.coach.rubric import RUBRIC_VERSION
+from promptlens.config import Config
 from promptlens.db.models import (
     Commit,
     CommitFile,
@@ -19,6 +20,7 @@ from promptlens.db.models import (
     Message,
     Project,
     PromptFeatures,
+    PromptRewrite,
     PromptScore,
     Session,
     SessionCommit,
@@ -269,7 +271,47 @@ def coach_prompts(
         )
     items.sort(key=lambda i: i["timestamp"] or 0, reverse=True)
     start = (page - 1) * page_size
-    return {"total": len(items), "items": items[start : start + page_size]}
+    page_items = items[start : start + page_size]
+    rewrites = {
+        r.message_id: r
+        for r in db.scalars(
+            select(PromptRewrite).where(
+                PromptRewrite.message_id.in_([i["message_id"] for i in page_items])
+            )
+        )
+    }
+    for i in page_items:
+        r = rewrites.get(i["message_id"])
+        i["rewrite"] = _rewrite_json(r) if r else None
+    return {"total": len(items), "items": page_items}
+
+
+def _rewrite_json(r: PromptRewrite) -> dict[str, Any]:
+    return {"rewrite": r.rewrite, "changes": r.changes, "method": r.method, "model": r.model_used}
+
+
+@router.post("/coach/rewrite/{message_id}")
+def rewrite_prompt(
+    message_id: int,
+    llm: bool = True,
+    force: bool = False,
+    db: DB = Depends(get_db),
+    cfg: Config = Depends(get_cfg),
+) -> dict[str, Any]:
+    from promptlens.coach.providers import get_provider
+    from promptlens.coach.rewrite import get_or_create_rewrite
+
+    provider = None
+    if llm:
+        try:
+            provider = get_provider(cfg)
+        except Exception:  # noqa: BLE001 - no usable provider: template rewrite
+            provider = None
+    try:
+        r = get_or_create_rewrite(db, cfg, message_id, provider, force=force)
+    except LookupError as e:
+        raise HTTPException(404, str(e)) from e
+    return _rewrite_json(r)
 
 
 @router.get("/insights")

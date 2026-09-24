@@ -181,7 +181,10 @@ export type CoachPrompt = {
   scope: string | null
   category: string | null
   suggestion: string | null
+  rewrite: Rewrite | null
 }
+
+export type Rewrite = { rewrite: string; changes: string[]; method: 'llm' | 'template'; model: string | null }
 
 export type Insight = {
   id: number

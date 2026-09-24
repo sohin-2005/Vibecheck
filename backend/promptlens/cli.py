@@ -89,8 +89,12 @@ def analyze() -> None:
 
 
 @app.command()
-def coach(limit: int = typer.Option(None, help="Score at most N prompts.")) -> None:
-    """Score prompts with the configured LLM."""
+def coach(
+    limit: int = typer.Option(None, help="Score at most N prompts."),
+    rewrite: bool = typer.Option(False, "--rewrite", help="Also rewrite your weakest prompts."),
+    rewrite_limit: int = typer.Option(20, help="How many weak prompts to rewrite."),
+) -> None:
+    """Score prompts with the configured LLM (and optionally rewrite weak ones)."""
     from promptlens.coach.providers import get_provider
     from promptlens.coach.scorer import score_prompts
 
@@ -106,6 +110,12 @@ def coach(limit: int = typer.Option(None, help="Score at most N prompts.")) -> N
         f"Scored {res.scored} prompts ({res.cached} from cache) in {res.llm_calls} LLM calls; "
         f"{res.failed} failed."
     )
+    if rewrite:
+        from promptlens.coach.rewrite import rewrite_weakest
+
+        with _db(cfg) as db:
+            done = rewrite_weakest(db, cfg, provider, rewrite_limit)
+        console.print(f"Rewrote {done} weak prompts. See them on the Coach page.")
 
 
 @app.command()

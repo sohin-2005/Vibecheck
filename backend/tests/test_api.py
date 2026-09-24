@@ -110,3 +110,16 @@ def test_digest_endpoint(client):
     d = client.get("/api/digest?days=3650").json()
     assert d["worst"]["id"] == "sess-basic"
     assert d["worst"]["went_wrong"]
+
+
+def test_rewrite_endpoint(client):
+    items = client.get("/api/coach/prompts").json()["items"]
+    vague = next(i for i in items if "that's wrong" in i["text"])
+    r = client.post(f"/api/coach/rewrite/{vague['message_id']}?llm=false").json()
+    assert r["method"] == "template" and r["changes"]
+    again = client.get("/api/coach/prompts").json()["items"]
+    assert (
+        next(i for i in again if i["message_id"] == vague["message_id"])["rewrite"]["rewrite"]
+        == r["rewrite"]
+    )
+    assert client.post("/api/coach/rewrite/99999?llm=false").status_code == 404

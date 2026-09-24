@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { get, type CoachPrompt, type CoachSummary, type Insight } from '../api/client'
 import { SimpleBarChart, TimeLineChart, WithTable } from '../components/charts'
+import PromptRewrite from '../components/PromptRewrite'
 import { Button, Card, Empty, ErrorBox, Kpi, Loading, PageHeader, Pill } from '../components/ui'
 import { useFilters } from '../lib/filters'
 import { fmtDateTime, fmtPct } from '../lib/format'
@@ -31,7 +32,7 @@ export default function Coach() {
 
   return (
     <div>
-      <PageHeader title="Prompt coach" subtitle={`How specific and well-scoped your prompts are. Rubric ${s.rubric_version}.`} />
+      <PageHeader title="Prompt coach" subtitle={`How specific and well-scoped your prompts are, with better versions of the vague ones. Rubric ${s.rubric_version}.`} />
       {s.scored === 0 && (
         <div className="mb-8 border-l-2 border-accent py-1 pl-4 text-sm text-ink-2">
           None of your {s.prompts} prompts have LLM scores yet. Run <code>promptlens coach</code> with Ollama running, or
@@ -155,7 +156,8 @@ export default function Coach() {
                     {p.scope === 'too_large' && <Pill tone="error">too large</Pill>}
                   </div>
                   <p className="mt-1 line-clamp-3 text-sm break-words whitespace-pre-wrap">{p.text}</p>
-                  {p.suggestion && <p className="mt-1 text-sm text-accent">→ {p.suggestion}</p>}
+                  {p.suggestion && <p className="mt-1 text-sm text-ink-2">→ {p.suggestion}</p>}
+                  <PromptRewrite prompt={p} />
                 </li>
               ))}
             </ul>
