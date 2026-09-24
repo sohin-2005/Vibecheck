@@ -104,3 +104,9 @@ def test_sources_and_tool_filter(client):
     assert src["codex"]["verified"] is False
     assert client.get("/api/sessions?tool=codex").json()["total"] == 0
     assert client.get("/api/sessions?tool=claude-code").json()["items"][0]["tool"] == "claude-code"
+
+
+def test_digest_endpoint(client):
+    d = client.get("/api/digest?days=3650").json()
+    assert d["worst"]["id"] == "sess-basic"
+    assert d["worst"]["went_wrong"]

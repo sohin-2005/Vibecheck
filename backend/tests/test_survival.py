@@ -137,16 +137,45 @@ def test_edit_matched_attribution(cfg, db, repo):
     commit_all(repo, "base", T0 - timedelta(days=1))
     setup(db, repo)
     ai_code = "def f():\n    return compute(1)\n\ndef g():\n    return compute(2)\n"
-    db.add(ToolCall(session_id="s", tool_use_id="w1", tool_name="Write", file_path=str(repo / "ai.py"),
-                    added_text=ai_code, timestamp=T0 - timedelta(minutes=5)))
+    db.add(
+        ToolCall(
+            session_id="s",
+            tool_use_id="w1",
+            tool_name="Write",
+            file_path=str(repo / "ai.py"),
+            added_text=ai_code,
+            timestamp=T0 - timedelta(minutes=5),
+        )
+    )
     db.commit()
     # The commit mixes 4 AI-written lines (+1 blank) with 2 lines the human added.
-    write(repo, "ai.py", ["def f():", "    return compute(1)", "", "def g():", "    return compute(2)",
-                          "# human note here", "HUMAN_CONST = 42"])
+    write(
+        repo,
+        "ai.py",
+        [
+            "def f():",
+            "    return compute(1)",
+            "",
+            "def g():",
+            "    return compute(2)",
+            "# human note here",
+            "HUMAN_CONST = 42",
+        ],
+    )
     c = commit_all(repo, "feat" + AI, T0)
     # Day 2: human changes one AI line and deletes one human line.
-    write(repo, "ai.py", ["def f():", "    return compute(1)", "", "def g():", "    return compute(3)",
-                          "# human note here"])
+    write(
+        repo,
+        "ai.py",
+        [
+            "def f():",
+            "    return compute(1)",
+            "",
+            "def g():",
+            "    return compute(3)",
+            "# human note here",
+        ],
+    )
     commit_all(repo, "tweak", T0 + timedelta(days=2))
     collect_all(cfg, db)
     link_all(cfg, db)

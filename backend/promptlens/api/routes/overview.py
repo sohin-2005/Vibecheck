@@ -5,11 +5,12 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import Any
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session as DB
 
-from promptlens.api.deps import Filters, filters, get_db, num
+from promptlens.api.deps import Filters, filters, get_cfg, get_db, num
+from promptlens.config import Config
 from promptlens.db.models import Commit, LineSurvival, Project, Session, SessionCommit
 
 router = APIRouter()
@@ -73,6 +74,17 @@ def overview(f: Filters = Depends(filters), db: DB = Depends(get_db)) -> dict[st
             for k, v in sorted(per_project.items(), key=lambda kv: -kv[1])
         ],
     }
+
+
+@router.get("/digest")
+def digest(
+    days: int = Query(7, ge=1, le=3650),
+    db: DB = Depends(get_db),
+    cfg: Config = Depends(get_cfg),
+) -> dict[str, Any]:
+    from promptlens.insights.digest import build_digest
+
+    return build_digest(db, cfg, days=days)
 
 
 @router.get("/sources")

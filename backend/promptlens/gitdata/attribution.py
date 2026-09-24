@@ -37,7 +37,9 @@ def match_ai(added: Iterable[str], ai_pool: Counter[str]) -> Counter[str]:
 def added_lines_from_diff(diff: str) -> list[str]:
     """``+`` lines from ``git show -U0`` output, without the ``+++`` file headers."""
     return [
-        line[1:] for line in diff.splitlines() if line.startswith("+") and not line.startswith("+++")
+        line[1:]
+        for line in diff.splitlines()
+        if line.startswith("+") and not line.startswith("+++")
     ]
 
 

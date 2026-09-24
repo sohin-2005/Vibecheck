@@ -204,3 +204,28 @@ export type Job = {
 }
 
 export type AppConfig = Record<string, unknown>
+
+export type DigestSession = {
+  id: string
+  title: string | null
+  tool: string
+  project: string | null
+  started_at: string | null
+  prompts: number
+  raw_score: number
+  has_commit: boolean
+}
+
+export type Digest = {
+  days: number
+  sessions: number
+  fallback: boolean
+  prompts: number
+  active_hours: number
+  sessions_with_commit: number
+  tools: Record<string, number>
+  worst: (DigestSession & { first_prompt: string; went_wrong: { kind: string; headline: string; detail: string }[] }) | null
+  best: DigestSession | null
+  tips: string[]
+  insights_progress: { sessions: number; needed: number }
+}

@@ -109,6 +109,32 @@ def coach(limit: int = typer.Option(None, help="Score at most N prompts.")) -> N
 
 
 @app.command()
+def digest(days: int = typer.Option(7, help="Look back this many days.")) -> None:
+    """Your worst recent session, what went wrong, and what to try next."""
+    from promptlens.insights.digest import build_digest
+
+    cfg = _cfg()
+    with _db(cfg) as db:
+        d = build_digest(db, cfg, days=days)
+    w = d["worst"]
+    if w is None:
+        console.print("No sessions with prompts yet. Run promptlens ingest first.")
+        return
+    period = f"last {days} days" if not d["fallback"] else "your most recent sessions"
+    console.print(f"[bold]Hardest session, {period}:[/] {w['title'] or w['id'][:8]}")
+    console.print(f"  {w['project'] or 'no project'} · {w['tool']} · {w['prompts']} prompts")
+    for item in w["went_wrong"]:
+        console.print(f"  - {item['headline']}. {item['detail']}")
+    if d["tips"]:
+        console.print("[bold]Try next time:[/]")
+        for t in d["tips"]:
+            console.print(f"  - {t}")
+    if d["best"]:
+        b = d["best"]
+        console.print(f"[bold]Smoothest:[/] {b['title'] or b['id'][:8]} ({b['prompts']} prompts)")
+
+
+@app.command()
 def insights() -> None:
     """Recompute insights from current data."""
     from promptlens.insights.analysis import compute_insights

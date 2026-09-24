@@ -24,7 +24,7 @@ DEFAULT_INTERRUPT_PATTERN = r"\[Request interrupted by user"
 META_PREFIXES = ("<task-notification>", "<command-", "<local-command-", "<system-reminder>")
 FILE_PATH_TOOLS = {"Read", "Edit", "Write", "MultiEdit", "NotebookEdit"}
 COMMAND_TOOLS = {"Bash", "PowerShell"}
-EDIT_TOOLS = {"Edit", "Write", "MultiEdit", "NotebookEdit"}
+EDIT_TOOLS = {"Edit", "Write", "MultiEdit", "NotebookEdit", "apply_patch"}
 
 
 @dataclass
@@ -69,6 +69,14 @@ class Event:
     tool_uses: list[ToolUse] = field(default_factory=list)
     tool_results: list[ToolResult] = field(default_factory=list)
     title: str | None = None
+
+
+PASTED_RE = re.compile(r"<pasted_content(?:\s[^>]*)?>.*?</pasted_content(?:\s[^>]*)?>", re.DOTALL)
+
+
+def strip_pasted(text: str) -> str:
+    """Replace pasted blocks (documents, logs) with a marker, leaving what the user typed."""
+    return PASTED_RE.sub("[pasted text]", text).strip()
 
 
 def _str(v: Any) -> str | None:

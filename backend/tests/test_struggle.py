@@ -104,3 +104,19 @@ def test_compute_struggle_stores_score_and_signals(db):
     assert rough.struggle_signals["corrections"] == 1
     assert rough.struggle_signals["tool_errors"] == 1
     assert rough.struggle_signals["raw_score"] == 3 + 2 + 1 + 1.0
+
+
+def test_pasted_documents_are_not_corrections():
+    pasted = '<pasted_content id="x">\nSpec: no, the parser must never crash. Try again later.\n</pasted_content id="x">\nbuild this'
+    long_typed = "Here is the plan. " * 40 + "no, that's wrong"
+    s = compute_signals([pasted, long_typed, "no, that's wrong"], 0, 0, [], CFG.correction_patterns)
+    assert s["corrections"] == 1
+
+
+def test_strip_pasted():
+    from promptlens.ingest.parser import strip_pasted
+
+    assert (
+        strip_pasted('hi <pasted_content id="a">\nbig\n</pasted_content id="a"> there')
+        == "hi [pasted text] there"
+    )

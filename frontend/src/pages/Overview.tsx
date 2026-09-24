@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { get, type Insight, type Overview as OverviewData } from '../api/client'
 import { SimpleBarChart, TimeLineChart, WithTable } from '../components/charts'
+import DigestPanel from '../components/DigestPanel'
 import { Card, Empty, ErrorBox, Kpi, Loading, PageHeader } from '../components/ui'
 import { useFilters } from '../lib/filters'
 import { fmtCompact, fmtInt, fmtPct, fmtUsd, shortDay } from '../lib/format'
@@ -22,7 +23,8 @@ export default function Overview() {
 
   return (
     <div>
-      <PageHeader title="Overview" subtitle="How much you use Claude Code, and how it's going." />
+      <PageHeader title="Overview" subtitle="How much you use AI coding tools, and how it's going." />
+      <DigestPanel />
       {t.sessions === 0 ? (
         <Card>
           <Empty>
@@ -107,7 +109,7 @@ export default function Overview() {
                 ))}
               </ul>
             ) : (
-              <Empty>Not enough sessions yet. Each comparison needs at least 10 sessions per group.</Empty>
+              <Empty>These appear once each comparison has at least 10 sessions per group. Until then, the digest above is the place to look.</Empty>
             )}
           </Card>
         </>

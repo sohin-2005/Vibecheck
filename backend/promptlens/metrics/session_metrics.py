@@ -68,7 +68,10 @@ def dedupe_usage(rows: Iterable[UsageRow]) -> dict[str, ModelUsage]:
 
 
 def estimate_cost(per_model: dict[str, ModelUsage], prices: dict[str, ModelPrice]) -> float | None:
-    """API-equivalent USD. None if any model that used tokens has no configured price."""
+    """API-equivalent USD. None if no usage was recorded (some tools don't log tokens) or if
+    any model that used tokens has no configured price."""
+    if not any(u.total for u in per_model.values()):
+        return None
     total = 0.0
     for model, u in per_model.items():
         if u.total == 0:
@@ -136,3 +139,13 @@ def recompute_session(db: DB, session_id: str, cfg: Config) -> None:
     s.started_at, s.ended_at = first, last
     stamps = [m.timestamp for m in main if m.timestamp]
     s.active_minutes = active_minutes(stamps)
+    if not s.title:  # tools without a title event: use the first prompt
+        first = db.scalar(
+            select(Message.text)
+            .where(Message.session_id == session_id, Message.is_human_prompt.is_(True))
+            .order_by(Message.timestamp)
+            .limit(1)
+        )
+        if first:
+            flat = " ".join(first.split())
+            s.title = flat if len(flat) <= 70 else flat[:69] + "…"

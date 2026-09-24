@@ -41,3 +41,10 @@ def test_active_minutes_excludes_long_gaps():
     ts = [t0, t0 + timedelta(minutes=10), t0 + timedelta(minutes=100), t0 + timedelta(minutes=105)]
     assert active_minutes(ts) == 15.0
     assert active_minutes([]) == 0.0
+
+
+def test_cost_unknown_without_any_usage_data():
+    assert estimate_cost({}, {"x": ModelPrice(input=1)}) is None
+    assert (
+        estimate_cost(dedupe_usage([row("a", "x", i=0, o=0)]), {"x": ModelPrice(input=1)}) is None
+    )
