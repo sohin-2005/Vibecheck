@@ -22,6 +22,7 @@ from vibecheck.db.session import make_sessionmaker, reset_database, run_migratio
 
 app = typer.Typer(help="Local-first analytics for Claude Code sessions.", no_args_is_help=True)
 console = Console()
+err_console = Console(stderr=True)  # stdout carries the MCP protocol during `vibecheck mcp`
 
 
 def _cfg() -> Config:
@@ -36,7 +37,7 @@ def _db(cfg: Config):  # type: ignore[no-untyped-def]
 def main(verbose: bool = typer.Option(False, "--verbose", "-v")) -> None:
     logging.basicConfig(level=logging.INFO if verbose else logging.WARNING)
     if migrate_legacy_home():
-        console.print("Moved ~/.promptlens to ~/.vibecheck (PromptLens is now Vibecheck).")
+        err_console.print("Moved ~/.promptlens to ~/.vibecheck (PromptLens is now Vibecheck).")
 
 
 @app.command()
@@ -251,6 +252,18 @@ def serve(
 
     console.print(f"Vibecheck at http://{host}:{port}")
     uvicorn.run("vibecheck.api.main:create_app", factory=True, host=host, port=port)
+
+
+@app.command("mcp")
+def mcp_cmd(
+    project: Path | None = typer.Option(
+        None, "--project", help="Project to give feedback on (default: current directory)."
+    ),
+) -> None:
+    """Run the MCP server on stdio, so AI coding agents can ask Vibecheck for feedback."""
+    from vibecheck.mcp.server import build_server
+
+    build_server(_cfg(), (project or Path.cwd()).resolve()).run()
 
 
 @app.command()

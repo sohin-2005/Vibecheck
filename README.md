@@ -88,6 +88,7 @@ No Docker? Set `[database] url = "sqlite:///C:/Users/you/.vibecheck/vibecheck.db
 | `vibecheck report --week` | Write `reports/YYYY-Www.md` |
 | `vibecheck team export / import / push` | Share weekly aggregates with a team (see below) |
 | `vibecheck stats` | Quick terminal summary |
+| `vibecheck mcp [--project PATH]` | Run the MCP server so your AI coding agent can ask for feedback (see below) |
 | `vibecheck reset` | Drop and recreate all tables (asks first) |
 
 ### Costs
@@ -117,6 +118,29 @@ Rewrites work without any LLM. The template version fills in the files the AI ac
 3. Without a network, share files instead: `vibecheck team export --member alex --out alex.json`, then the lead runs `vibecheck team import alex.json`.
 
 An export contains, per ISO week, only counts, rates and medians: sessions, active hours, tokens, commit rate, median struggle, tool error rate, 7-day survival, prompt specificity and a context share. It never contains prompts, replies, code, file paths, commands, commit messages or session ids. Project names are hashed unless you pass `--include-projects`. The receiving endpoint is off unless the server sets a token.
+
+### Feedback for your AI agent (MCP)
+
+`vibecheck mcp` is an [MCP](https://modelcontextprotocol.io) server. Your coding agent can call it while it works:
+
+| Tool | What the agent gets | Needs the database? |
+|---|---|---|
+| `session_health` | How the current session is going (files edited over and over, failing commands, corrections) and what to do next | No, it reads the live session log |
+| `project_lessons` | What usually goes wrong in this repo: re-edited files, failing commands, tips | Yes (`vibecheck run`) |
+| `habits` | Prompting habits that led to better sessions, across all projects, numbers only | Yes |
+| `critique_prompt` | What a request is missing, plus a sharper version with `[placeholders]` | No |
+
+Register it once with Claude Code:
+
+```bash
+claude mcp add vibecheck -- vibecheck mcp
+# from a checkout without the command on PATH (Windows):
+claude mcp add vibecheck -- C:\path\to\backend\.venv\Scripts\vibecheck.exe mcp
+```
+
+Codex CLI and Antigravity take the same command in their MCP settings. The project is the directory the agent starts the server in, or `--project PATH`.
+
+Everything the tools return is redacted and goes into the agent's context, so it is sent to your model provider. File names and commands only ever come from the current project, and `habits` returns numbers only. The server never writes anything. `session_health` reads Claude Code sessions only.
 
 ## How each metric works, and its limits
 

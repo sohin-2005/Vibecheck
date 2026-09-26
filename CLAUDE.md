@@ -8,6 +8,7 @@ Local-first analytics for AI coding sessions (Claude Code, Antigravity; Codex CL
 - Lint: `cd backend && uv run ruff check . && uv run ruff format --check .`
 - Frontend dev: `cd frontend && npm run dev`
 - Frontend build: `cd frontend && npm run build` (served by `vibecheck serve`)
+- MCP server (stdio): `cd backend && uv run vibecheck mcp`
 
 ## Conventions
 - Python 3.11, type hints everywhere, Pydantic for external data, SQLAlchemy 2.0 style.
