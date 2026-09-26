@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import re
+import time
 from collections.abc import Callable
 from pathlib import Path
 
@@ -33,7 +34,8 @@ NO_DB = (
     "No Vibecheck database found. Run `vibecheck init` and `vibecheck run` to enable "
     "project lessons and habits."
 )
-PG_CONNECT_TIMEOUT = 5  # seconds; a stopped Postgres must not hang the agent
+PG_CONNECT_TIMEOUT = 2  # seconds per address; a stopped Postgres must not hang the agent
+DB_RETRY_AFTER = 60.0  # seconds to answer NO_DB before trying a failed database again
 
 
 def database_url(url: str) -> str | None:
@@ -53,6 +55,7 @@ class Feedback:
         self.cfg = cfg
         self.project_dir = project_dir
         self.redactor = Redactor(cfg.redaction_enabled, cfg.redaction_extra_patterns)
+        self.db_failed_at: float | None = None
 
     def _safe(self, what: str, fn: Callable[[], str]) -> str:
         try:
@@ -66,14 +69,20 @@ class Feedback:
         url = database_url(self.cfg.database_url)
         if url is None:
             return NO_DB
+        failed_at = self.db_failed_at
+        if failed_at is not None and time.monotonic() - failed_at < DB_RETRY_AFTER:
+            return NO_DB
         db = make_sessionmaker(url)()
         try:
-            return fn(db)
-        except SQLAlchemyError:
-            log.warning("database not usable", exc_info=True)
+            text = fn(db)
+        except SQLAlchemyError as e:
+            log.warning("database not usable: %s", type(e).__name__)
+            self.db_failed_at = time.monotonic()
             return NO_DB
         finally:
             db.close()
+        self.db_failed_at = None
+        return text
 
     def _health(self, session_id: str | None) -> str:
         path = find_session_file(self.cfg.claude_projects_dir, self.project_dir, session_id)
@@ -82,6 +91,9 @@ class Feedback:
         interrupt_re = re.compile(self.cfg.interrupt_pattern)
         events = (ev for _, ev in iter_events(path, interrupt_re=interrupt_re))
         s = read_session(events)
+        # Redact before assess() shortens text: a secret cut in half no longer matches.
+        s.prompts = [self.redactor.redact(p) or "" for p in s.prompts]
+        s.failures = [(tool, self.redactor.redact(what)) for tool, what in s.failures]
         return render_health(assess(s, self.cfg.weights, self.cfg.correction_patterns))
 
     def session_health(self, session_id: str | None = None) -> str:
