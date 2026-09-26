@@ -1,6 +1,6 @@
 import pytest
 
-from promptlens.ingest.redact import Redactor
+from vibecheck.ingest.redact import Redactor
 
 R = Redactor()
 
@@ -68,7 +68,7 @@ def test_default_patterns(text, kind, secret):
         "PASSWORD_MIN_LENGTH is 8",
         "set token expiry to 30 minutes",
         "https://github.com/obra/superpowers",
-        "postgresql+psycopg://localhost:5432/promptlens",
+        "postgresql+psycopg://localhost:5432/vibecheck",
         "desk-lamp and task-runner are fine",
         "AKIA is a prefix but AKIA123 is too short",
         "eyJ alone is not a jwt",

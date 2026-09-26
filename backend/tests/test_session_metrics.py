@@ -1,7 +1,7 @@
 from datetime import UTC, datetime, timedelta
 
-from promptlens.config import ModelPrice
-from promptlens.metrics.session_metrics import (
+from vibecheck.config import ModelPrice
+from vibecheck.metrics.session_metrics import (
     UsageRow,
     active_minutes,
     dedupe_usage,

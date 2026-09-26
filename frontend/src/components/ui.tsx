@@ -69,7 +69,7 @@ export function Loading() {
 export function ErrorBox({ error }: { error: unknown }) {
   return (
     <div className="border-l-2 border-error-ink bg-error-bg px-4 py-3 text-sm text-error-ink" role="alert">
-      Couldn't load data: {error instanceof Error ? error.message : String(error)}. Is <code>promptlens serve</code>{' '}
+      Couldn't load data: {error instanceof Error ? error.message : String(error)}. Is <code>vibecheck serve</code>{' '}
       running?
     </div>
   )

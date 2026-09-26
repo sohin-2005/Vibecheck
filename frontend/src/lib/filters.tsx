@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import type { Filters } from '../api/client'
 
-const KEY = 'promptlens.filters'
+const KEY = 'vibecheck.filters'
 
 type Ctx = { filters: Filters; setFilters: (f: Filters) => void }
 

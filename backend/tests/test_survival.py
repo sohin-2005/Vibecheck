@@ -2,10 +2,10 @@ from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import select
 
-from promptlens.db.models import LineSurvival, Project, Session
-from promptlens.gitdata.collector import collect_all
-from promptlens.gitdata.survival import compute_survival, count_blame, default_branch
 from tests.conftest import git
+from vibecheck.db.models import LineSurvival, Project, Session
+from vibecheck.gitdata.collector import collect_all
+from vibecheck.gitdata.survival import compute_survival, count_blame, default_branch
 
 T0 = datetime(2026, 8, 1, 12, 0, tzinfo=UTC)
 NOW = T0 + timedelta(days=40)
@@ -130,8 +130,8 @@ def test_human_commits_are_not_analyzed(cfg, db, repo):
 
 
 def test_edit_matched_attribution(cfg, db, repo):
-    from promptlens.db.models import ToolCall
-    from promptlens.gitdata.linker import link_all
+    from vibecheck.db.models import ToolCall
+    from vibecheck.gitdata.linker import link_all
 
     write(repo, "keep.py", ["base"])
     commit_all(repo, "base", T0 - timedelta(days=1))
@@ -198,7 +198,7 @@ def test_no_edit_data_leaves_ai_columns_empty(cfg, db, repo):
 def test_attribution_helpers():
     from collections import Counter
 
-    from promptlens.gitdata.attribution import blame_lines, match_ai, normalize, pool
+    from vibecheck.gitdata.attribution import blame_lines, match_ai, normalize, pool
 
     assert normalize("   return x  ") == "return x"
     assert normalize("  }); ") is None and normalize("") is None

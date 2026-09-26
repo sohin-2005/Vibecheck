@@ -9,7 +9,7 @@ from collections.abc import Sequence
 import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.dialects import postgresql
-import promptlens.db.models
+import vibecheck.db.models
 
 revision: str = '0002'
 down_revision: str | None = '0001'
@@ -23,7 +23,7 @@ def upgrade() -> None:
     sa.Column('member', sa.Text(), nullable=False),
     sa.Column('week', sa.Text(), nullable=False),
     sa.Column('payload', sa.JSON().with_variant(postgresql.JSONB(astext_type=sa.Text()), 'postgresql'), nullable=False),
-    sa.Column('received_at', promptlens.db.models.UTCDateTime(timezone=True), nullable=False),
+    sa.Column('received_at', vibecheck.db.models.UTCDateTime(timezone=True), nullable=False),
     sa.PrimaryKeyConstraint('member', 'week')
     )
     op.create_table('prompt_rewrites',
@@ -32,7 +32,7 @@ def upgrade() -> None:
     sa.Column('model_used', sa.Text(), nullable=True),
     sa.Column('rewrite', sa.Text(), nullable=False),
     sa.Column('changes', sa.JSON().with_variant(postgresql.JSONB(astext_type=sa.Text()), 'postgresql'), nullable=False),
-    sa.Column('created_at', promptlens.db.models.UTCDateTime(timezone=True), nullable=False),
+    sa.Column('created_at', vibecheck.db.models.UTCDateTime(timezone=True), nullable=False),
     sa.ForeignKeyConstraint(['message_id'], ['messages.id'], ),
     sa.PrimaryKeyConstraint('message_id')
     )

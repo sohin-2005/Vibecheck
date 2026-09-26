@@ -1,13 +1,13 @@
 from datetime import UTC, datetime, timedelta
 
-from promptlens.coach.rewrite import (
+from vibecheck.coach.rewrite import (
     RewriteContext,
     get_or_create_rewrite,
     session_context,
     template_rewrite,
 )
-from promptlens.config import Config
-from promptlens.db.models import Message, Project, PromptRewrite, Session, ToolCall
+from vibecheck.config import Config
+from vibecheck.db.models import Message, Project, PromptRewrite, Session, ToolCall
 
 T = datetime(2026, 9, 20, 10, tzinfo=UTC)
 
@@ -151,7 +151,7 @@ def test_without_provider_uses_template(db):
 
 
 def test_rewrite_weakest_skips_good_prompts(db):
-    from promptlens.coach.rewrite import rewrite_weakest
+    from vibecheck.coach.rewrite import rewrite_weakest
 
     seed(db)
     db.add(

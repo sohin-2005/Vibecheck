@@ -1,8 +1,8 @@
 from sqlalchemy import func, select
 
-from promptlens.db.models import Insight, LineSurvival, Session
-from promptlens.db.session import make_sessionmaker
-from promptlens.demo.generate import build_demo
+from vibecheck.db.models import Insight, LineSurvival, Session
+from vibecheck.db.session import make_sessionmaker
+from vibecheck.demo.generate import build_demo
 
 
 def test_demo_builds_a_complete_dataset(tmp_path):
@@ -19,7 +19,7 @@ def test_demo_builds_a_complete_dataset(tmp_path):
 
 
 def test_demo_covers_new_features(tmp_path):
-    from promptlens.db.models import TeamSnapshot
+    from vibecheck.db.models import TeamSnapshot
 
     url = f"sqlite:///{(tmp_path / 'demo2.db').as_posix()}"
     build_demo(url, n_sessions=60)

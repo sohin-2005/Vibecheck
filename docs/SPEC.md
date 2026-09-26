@@ -1,6 +1,6 @@
-# PromptLens — Project Specification
+# Vibecheck — Project Specification
 
-A local-first analytics and coaching tool for AI-assisted coding. PromptLens reads your Claude Code session logs and your git history, then tells you what your AI usage costs, where it struggles, how much AI-written code survives, and how to prompt better.
+A local-first analytics and coaching tool for AI-assisted coding. Vibecheck reads your Claude Code session logs and your git history, then tells you what your AI usage costs, where it struggles, how much AI-written code survives, and how to prompt better.
 
 ## 1. Overview
 
@@ -15,7 +15,7 @@ Developers using Claude Code have no visibility into how well it is going. They 
 
 ### 1.2 The solution
 
-PromptLens is a fitness tracker for AI-assisted coding. It:
+Vibecheck is a fitness tracker for AI-assisted coding. It:
 
 - Ingests Claude Code session transcripts that already exist on the developer's machine.
 - Links sessions to git commits.
@@ -138,7 +138,7 @@ The CLI drives all processing jobs. The API is read-mostly and can also trigger 
 ### 4.2 Repository structure
 
 ```
-promptlens/
+vibecheck/
 ├── CLAUDE.md
 ├── README.md
 ├── docker-compose.yml
@@ -148,7 +148,7 @@ promptlens/
 ├── backend/
 │   ├── pyproject.toml
 │   ├── alembic/
-│   ├── promptlens/
+│   ├── vibecheck/
 │   │   ├── cli.py
 │   │   ├── config.py
 │   │   ├── db/            (models.py, session.py)
@@ -168,11 +168,11 @@ promptlens/
 
 ## 5. Configuration
 
-File: `~/.promptlens/config.toml` (created by `promptlens init`). Environment variables override values.
+File: `~/.vibecheck/config.toml` (created by `vibecheck init`). Environment variables override values.
 
 ```toml
 [database]
-url = "postgresql+psycopg://promptlens:promptlens@localhost:5432/promptlens"
+url = "postgresql+psycopg://vibecheck:vibecheck@localhost:5432/vibecheck"
 
 [sources]
 claude_projects_dir = "~/.claude/projects"
@@ -214,7 +214,7 @@ API keys come only from environment variables (`GEMINI_API_KEY`, `GROQ_API_KEY`)
 
 All timestamps stored as timestamptz. Store the raw event JSON so the parser can improve later without re-reading files.
 
-Tables: `ingest_state`, `projects`, `sessions`, `raw_events`, `messages`, `tool_calls`, `commits`, `commit_files`, `session_commits`, `line_survival`, `prompt_features`, `prompt_scores`, `insights`. See `backend/promptlens/db/models.py` for the authoritative definitions.
+Tables: `ingest_state`, `projects`, `sessions`, `raw_events`, `messages`, `tool_calls`, `commits`, `commit_files`, `session_commits`, `line_survival`, `prompt_features`, `prompt_scores`, `insights`. See `backend/vibecheck/db/models.py` for the authoritative definitions.
 
 Indexes: `messages(session_id, timestamp)`, `tool_calls(session_id)`, `commits(project_id, authored_at)`, `sessions(started_at)`.
 
@@ -282,13 +282,13 @@ Provider protocol with `complete_json(system, user, schema) -> dict`. Ollama, Ge
 Compare outcomes (turns_to_commit, struggle_score, 7-day survival, has_commit) between groups of first prompts: has_context, mentions_file, has_error_text (bugfix only), scope small/medium vs too_large, specificity ≥4 vs ≤2. Medians; min 10 sessions per group; always show n; correlation language.
 
 ### 7.13 Weekly report (`insights/report.py`)
-`promptlens report --week` writes `reports/YYYY-Www.md`: summary vs previous week, top-3 struggle sessions, 7-day survival, prompt habits, top insights.
+`vibecheck report --week` writes `reports/YYYY-Www.md`: summary vs previous week, top-3 struggle sessions, 7-day survival, prompt habits, top insights.
 
 ## 8. CLI
 
 ```
-promptlens init | ingest | git | analyze | coach [--limit N] | insights
-promptlens report --week | run | stats | serve | demo | reset
+vibecheck init | ingest | git | analyze | coach [--limit N] | insights
+vibecheck report --week | run | stats | serve | demo | reset
 ```
 
 ## 9. API (FastAPI)

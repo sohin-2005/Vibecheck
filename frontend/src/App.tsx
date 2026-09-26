@@ -25,7 +25,7 @@ type Theme = 'system' | 'light' | 'dark'
 function useTheme(): [Theme, (t: Theme) => void] {
   const [theme, setTheme] = useState<Theme>(() => {
     try {
-      return (localStorage.getItem('promptlens.theme') as Theme) || 'system'
+      return (localStorage.getItem('vibecheck.theme') as Theme) || 'system'
     } catch {
       return 'system'
     }
@@ -35,7 +35,7 @@ function useTheme(): [Theme, (t: Theme) => void] {
     if (theme === 'system') root.removeAttribute('data-theme')
     else root.setAttribute('data-theme', theme)
     try {
-      localStorage.setItem('promptlens.theme', theme)
+      localStorage.setItem('vibecheck.theme', theme)
     } catch {
       /* ignore */
     }
@@ -52,7 +52,7 @@ export default function App() {
       <header className="pt-7">
         <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-rule pb-3">
           <div className="flex items-baseline gap-4">
-            <span className="serif text-[26px] leading-none tracking-tight">PromptLens</span>
+            <span className="serif text-[26px] leading-none tracking-tight">Vibecheck</span>
             <span className="hidden text-[13px] text-ink-3 italic serif sm:inline">a ledger of your AI-assisted coding</span>
           </div>
           <div className="flex items-baseline gap-4 text-[12px] text-ink-3">

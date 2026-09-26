@@ -1,10 +1,10 @@
 from pathlib import Path
 
-from promptlens.config import DEFAULT_CONFIG_TOML, load_config
+from vibecheck.config import DEFAULT_CONFIG_TOML, load_config
 
 
 def test_defaults_when_file_missing(tmp_path, monkeypatch):
-    monkeypatch.delenv("PROMPTLENS_DATABASE_URL", raising=False)
+    monkeypatch.delenv("VIBECHECK_DATABASE_URL", raising=False)
     cfg = load_config(tmp_path / "nope.toml")
     assert cfg.database_url.startswith("postgresql+psycopg://")
     assert cfg.survival_checkpoints_days == [1, 7, 30]
@@ -38,7 +38,7 @@ weights = { interrupts = 5.0 }
 
 
 def test_env_overrides_file(tmp_path, monkeypatch):
-    monkeypatch.setenv("PROMPTLENS_DATABASE_URL", "sqlite:///x.db")
+    monkeypatch.setenv("VIBECHECK_DATABASE_URL", "sqlite:///x.db")
     cfg = load_config(tmp_path / "nope.toml")
     assert cfg.database_url == "sqlite:///x.db"
 
@@ -48,3 +48,32 @@ def test_default_toml_parses(tmp_path):
     p.write_text(DEFAULT_CONFIG_TOML, encoding="utf-8")
     cfg = load_config(p)
     assert cfg.claude_projects_dir == Path("~/.claude/projects").expanduser()
+
+
+def test_legacy_home_is_moved_and_paths_rewritten(tmp_path):
+    from vibecheck.config import migrate_legacy_home
+
+    old, new = tmp_path / ".promptlens", tmp_path / ".vibecheck"
+    old.mkdir()
+    (old / "dev.db").write_bytes(b"db")
+    (old / "config.toml").write_text(
+        f'[database]\nurl = "sqlite:///{old.as_posix()}/dev.db"\n'
+        '# url = "postgresql+psycopg://promptlens:promptlens@localhost:5432/promptlens"\n',
+        encoding="utf-8",
+    )
+    assert migrate_legacy_home(old, new) is True
+    assert not old.exists() and (new / "dev.db").read_bytes() == b"db"
+    text = (new / "config.toml").read_text("utf-8")
+    assert f"sqlite:///{new.as_posix()}/dev.db" in text
+    assert "vibecheck:vibecheck@localhost:5432/vibecheck" in text and "promptlens" not in text
+
+
+def test_legacy_home_left_alone_when_new_home_exists(tmp_path):
+    from vibecheck.config import migrate_legacy_home
+
+    old, new = tmp_path / ".promptlens", tmp_path / ".vibecheck"
+    old.mkdir()
+    new.mkdir()
+    assert migrate_legacy_home(old, new) is False
+    assert old.exists()
+    assert migrate_legacy_home(tmp_path / "missing", tmp_path / "other") is False

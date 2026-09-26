@@ -1,5 +1,5 @@
-from promptlens.ingest.parser import iter_events, parse_line, summarize
 from tests.conftest import FIXTURES
+from vibecheck.ingest.parser import iter_events, parse_line, summarize
 
 BASIC = FIXTURES / "basic_session.jsonl"
 

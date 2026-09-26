@@ -2,8 +2,8 @@ from datetime import UTC, datetime
 
 from sqlalchemy import inspect
 
-from promptlens.db.models import Project, Session
-from promptlens.db.session import get_engine, run_migrations
+from vibecheck.db.models import Project, Session
+from vibecheck.db.session import get_engine, run_migrations
 
 
 def test_migrations_create_all_tables(tmp_path):

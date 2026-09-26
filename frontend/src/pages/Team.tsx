@@ -53,16 +53,16 @@ export default function Team() {
         <Card title="Set up team mode">
           <ol className="max-w-3xl list-decimal space-y-3 pl-5 text-[14px] text-ink-2">
             <li>
-              The team lead picks a shared token and starts PromptLens with it:{' '}
-              <code className="font-mono text-[13px] text-ink">PROMPTLENS_TEAM_TOKEN=… promptlens serve --host 0.0.0.0</code>
+              The team lead picks a shared token and starts Vibecheck with it:{' '}
+              <code className="font-mono text-[13px] text-ink">VIBECHECK_TEAM_TOKEN=… vibecheck serve --host 0.0.0.0</code>
             </li>
             <li>
               Each teammate, with the same token set, runs{' '}
-              <code className="font-mono text-[13px] text-ink">promptlens team push --url http://lead-host:8000 --member alex</code>
+              <code className="font-mono text-[13px] text-ink">vibecheck team push --url http://lead-host:8000 --member alex</code>
             </li>
             <li>
-              No network? Run <code className="font-mono text-[13px] text-ink">promptlens team export --member alex --out alex.json</code>,
-              send the file, and the lead runs <code className="font-mono text-[13px] text-ink">promptlens team import alex.json</code>.
+              No network? Run <code className="font-mono text-[13px] text-ink">vibecheck team export --member alex --out alex.json</code>,
+              send the file, and the lead runs <code className="font-mono text-[13px] text-ink">vibecheck team import alex.json</code>.
             </li>
           </ol>
           <p className="mt-4 text-[13px] text-ink-3">

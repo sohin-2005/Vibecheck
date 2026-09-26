@@ -1,7 +1,7 @@
 # Claude Code session format notes
 
 Findings from inspecting real session files (Claude Code 2.1.x, September 2026, 3 sessions, ~5,700 events).
-Re-run `python -m promptlens.ingest.survey` to check against your own files.
+Re-run `python -m vibecheck.ingest.survey` to check against your own files.
 
 ## Layout
 

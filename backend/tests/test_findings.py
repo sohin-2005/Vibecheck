@@ -1,8 +1,8 @@
 from datetime import UTC, datetime, timedelta
 
-from promptlens.config import Config
-from promptlens.db.models import Message, Project, PromptFeatures, Session, ToolCall
-from promptlens.insights.findings import draft_findings
+from vibecheck.config import Config
+from vibecheck.db.models import Message, Project, PromptFeatures, Session, ToolCall
+from vibecheck.insights.findings import draft_findings
 
 T = datetime(2026, 9, 1, 10, tzinfo=UTC)
 
@@ -87,7 +87,7 @@ def test_findings_empty(db):
 
 
 def test_tool_label():
-    from promptlens.insights.findings import tool_label
+    from vibecheck.insights.findings import tool_label
 
     assert tool_label("mcp__Claude_Browser__computer") == "computer (Claude_Browser MCP)"
     assert tool_label("Bash") == "Bash"

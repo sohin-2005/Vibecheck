@@ -2,14 +2,14 @@ import shutil
 
 from sqlalchemy import select
 
-from promptlens.db.models import Message, Session, ToolCall
-from promptlens.ingest.ingest import ingest_all
-from promptlens.sources import ADAPTERS
-from promptlens.sources.aider import AiderAdapter
-from promptlens.sources.antigravity import AntigravityAdapter
-from promptlens.sources.claude_code import ClaudeCodeAdapter
-from promptlens.sources.codex import CodexAdapter
 from tests.conftest import FIXTURES
+from vibecheck.db.models import Message, Session, ToolCall
+from vibecheck.ingest.ingest import ingest_all
+from vibecheck.sources import ADAPTERS
+from vibecheck.sources.aider import AiderAdapter
+from vibecheck.sources.antigravity import AntigravityAdapter
+from vibecheck.sources.claude_code import ClaudeCodeAdapter
+from vibecheck.sources.codex import CodexAdapter
 
 
 def events(adapter, path):

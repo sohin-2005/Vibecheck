@@ -28,8 +28,8 @@ export default function Survival() {
       {!d.checkpoints.length ? (
         <Card>
           <Empty>
-            No survival data yet. It needs AI-linked commits that are at least a day old. Run <code>promptlens git</code> then{' '}
-            <code>promptlens analyze</code>.
+            No survival data yet. It needs AI-linked commits that are at least a day old. Run <code>vibecheck git</code> then{' '}
+            <code>vibecheck analyze</code>.
           </Empty>
         </Card>
       ) : (

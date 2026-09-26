@@ -4,13 +4,13 @@ from datetime import UTC, datetime
 import httpx
 import pytest
 
-from promptlens.coach.features import compute_features, extract_features
-from promptlens.coach.providers import CloudNotConfirmedError, get_provider
-from promptlens.coach.providers.ollama import OllamaProvider
-from promptlens.coach.rubric import RUBRIC_VERSION
-from promptlens.coach.scorer import score_prompts
-from promptlens.config import Config
-from promptlens.db.models import Message, Project, PromptFeatures, PromptScore, Session
+from vibecheck.coach.features import compute_features, extract_features
+from vibecheck.coach.providers import CloudNotConfirmedError, get_provider
+from vibecheck.coach.providers.ollama import OllamaProvider
+from vibecheck.coach.rubric import RUBRIC_VERSION
+from vibecheck.coach.scorer import score_prompts
+from vibecheck.config import Config
+from vibecheck.db.models import Message, Project, PromptFeatures, PromptScore, Session
 
 
 @pytest.mark.parametrize(

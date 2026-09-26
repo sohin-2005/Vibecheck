@@ -4,8 +4,8 @@ from datetime import UTC, datetime, timedelta
 import pytest
 from fastapi.testclient import TestClient
 
-from promptlens.api.main import create_app
-from promptlens.db.models import (
+from vibecheck.api.main import create_app
+from vibecheck.db.models import (
     Commit,
     LineSurvival,
     Message,
@@ -15,7 +15,7 @@ from promptlens.db.models import (
     TeamSnapshot,
     ToolCall,
 )
-from promptlens.team import build_export, import_export
+from vibecheck.team import build_export, import_export
 
 T = datetime(2026, 9, 16, 10, tzinfo=UTC)  # ISO week 2026-W38
 SECRET_PROMPT = "fix the bug in secret_billing.py using key hunter2"
@@ -106,7 +106,7 @@ def test_export_contains_aggregates_only(db):
         "s0",
     ):
         assert secret not in text
-    assert payload["schema"] == "promptlens.team.v1" and payload["member"] == "alex"
+    assert payload["schema"] == "vibecheck.team.v1" and payload["member"] == "alex"
     week = next(w for w in payload["weeks"] if w["week"] == "2026-W38")
     assert week["sessions"] == 3
     assert week["active_hours"] == 1.5
@@ -138,7 +138,7 @@ def test_import_rejects_bad_payloads(db):
     with pytest.raises(ValueError):
         import_export(db, {"schema": "something-else", "member": "x", "weeks": []})
     with pytest.raises(ValueError):
-        import_export(db, {"schema": "promptlens.team.v1", "member": "", "weeks": []})
+        import_export(db, {"schema": "vibecheck.team.v1", "member": "", "weeks": []})
 
 
 @pytest.fixture
@@ -149,14 +149,21 @@ def client(cfg):
 def test_push_requires_token(client, db, monkeypatch):
     seed(db)
     payload = build_export(db, member="alex", weeks=520, now=T + timedelta(days=2))
-    monkeypatch.delenv("PROMPTLENS_TEAM_TOKEN", raising=False)
+    monkeypatch.delenv("VIBECHECK_TEAM_TOKEN", raising=False)
     assert client.post("/api/team/snapshots", json=payload).status_code == 403
-    monkeypatch.setenv("PROMPTLENS_TEAM_TOKEN", "s3cret")
+    monkeypatch.setenv("VIBECHECK_TEAM_TOKEN", "s3cret")
     assert client.post("/api/team/snapshots", json=payload).status_code == 401
     r = client.post(
-        "/api/team/snapshots", json=payload, headers={"X-PromptLens-Team-Token": "s3cret"}
+        "/api/team/snapshots", json=payload, headers={"X-Vibecheck-Team-Token": "s3cret"}
     )
     assert r.status_code == 200 and r.json()["weeks"] == len(payload["weeks"])
     team = client.get("/api/team").json()
     assert team["members"] == ["alex"]
     assert any(row["week"] == "2026-W38" and row["sessions"] == 3 for row in team["rows"])
+
+
+def test_import_accepts_legacy_promptlens_schema(db):
+    seed(db)
+    payload = build_export(db, member="alex", weeks=520, now=T + timedelta(days=2))
+    payload["schema"] = "promptlens.team.v1"
+    assert import_export(db, payload) == len(payload["weeks"])

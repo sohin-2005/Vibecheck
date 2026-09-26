@@ -3,10 +3,10 @@ import shutil
 
 from sqlalchemy import func, select
 
-from promptlens.config import ModelPrice
-from promptlens.db.models import IngestState, Message, Project, RawEvent, Session, ToolCall
-from promptlens.ingest.ingest import ingest_all
 from tests.conftest import FIXTURES
+from vibecheck.config import ModelPrice
+from vibecheck.db.models import IngestState, Message, Project, RawEvent, Session, ToolCall
+from vibecheck.ingest.ingest import ingest_all
 
 
 def place(cfg, name="basic_session.jsonl"):

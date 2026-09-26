@@ -2,8 +2,8 @@ import shutil
 
 from typer.testing import CliRunner
 
-from promptlens.cli import app
 from tests.conftest import FIXTURES
+from vibecheck.cli import app
 
 runner = CliRunner()
 
@@ -13,10 +13,10 @@ def env_for(tmp_path):
     projects.mkdir(parents=True)
     shutil.copy(FIXTURES / "basic_session.jsonl", projects)
     return {
-        "PROMPTLENS_CONFIG": str(tmp_path / "config.toml"),
-        "PROMPTLENS_DATABASE_URL": f"sqlite:///{(tmp_path / 'cli.db').as_posix()}",
-        "PROMPTLENS_CLAUDE_PROJECTS_DIR": str(tmp_path / "projects"),
-        "PROMPTLENS_TOOLS": "claude-code",
+        "VIBECHECK_CONFIG": str(tmp_path / "config.toml"),
+        "VIBECHECK_DATABASE_URL": f"sqlite:///{(tmp_path / 'cli.db').as_posix()}",
+        "VIBECHECK_CLAUDE_PROJECTS_DIR": str(tmp_path / "projects"),
+        "VIBECHECK_TOOLS": "claude-code",
     }
 
 

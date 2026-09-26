@@ -10,7 +10,7 @@ from collections.abc import Sequence
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
-import promptlens.db.models
+import vibecheck.db.models
 from alembic import op
 
 revision: str = "0001"
@@ -25,15 +25,15 @@ def upgrade() -> None:
         "ingest_state",
         sa.Column("file_path", sa.Text(), nullable=False),
         sa.Column("file_size", sa.BigInteger(), nullable=False),
-        sa.Column("mtime", promptlens.db.models.UTCDateTime(timezone=True), nullable=False),
+        sa.Column("mtime", vibecheck.db.models.UTCDateTime(timezone=True), nullable=False),
         sa.Column("lines_processed", sa.Integer(), nullable=False),
-        sa.Column("updated_at", promptlens.db.models.UTCDateTime(timezone=True), nullable=False),
+        sa.Column("updated_at", vibecheck.db.models.UTCDateTime(timezone=True), nullable=False),
         sa.PrimaryKeyConstraint("file_path"),
     )
     op.create_table(
         "insights",
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
-        sa.Column("generated_at", promptlens.db.models.UTCDateTime(timezone=True), nullable=False),
+        sa.Column("generated_at", vibecheck.db.models.UTCDateTime(timezone=True), nullable=False),
         sa.Column("kind", sa.Text(), nullable=False),
         sa.Column("title", sa.Text(), nullable=False),
         sa.Column(
@@ -58,7 +58,7 @@ def upgrade() -> None:
         "commits",
         sa.Column("sha", sa.String(length=64), nullable=False),
         sa.Column("project_id", sa.Integer(), nullable=False),
-        sa.Column("authored_at", promptlens.db.models.UTCDateTime(timezone=True), nullable=False),
+        sa.Column("authored_at", vibecheck.db.models.UTCDateTime(timezone=True), nullable=False),
         sa.Column("message", sa.Text(), nullable=False),
         sa.Column("is_merge", sa.Boolean(), nullable=False),
         sa.Column("ai_coauthored", sa.Boolean(), nullable=False),
@@ -80,8 +80,8 @@ def upgrade() -> None:
         sa.Column("id", sa.String(length=64), nullable=False),
         sa.Column("project_id", sa.Integer(), nullable=True),
         sa.Column("title", sa.Text(), nullable=True),
-        sa.Column("started_at", promptlens.db.models.UTCDateTime(timezone=True), nullable=True),
-        sa.Column("ended_at", promptlens.db.models.UTCDateTime(timezone=True), nullable=True),
+        sa.Column("started_at", vibecheck.db.models.UTCDateTime(timezone=True), nullable=True),
+        sa.Column("ended_at", vibecheck.db.models.UTCDateTime(timezone=True), nullable=True),
         sa.Column("git_branch", sa.Text(), nullable=True),
         sa.Column("cc_version", sa.Text(), nullable=True),
         sa.Column(
@@ -134,7 +134,7 @@ def upgrade() -> None:
         sa.Column("snapshot_sha", sa.Text(), nullable=True),
         sa.Column("lines_total", sa.Integer(), nullable=False),
         sa.Column("lines_surviving", sa.Integer(), nullable=False),
-        sa.Column("computed_at", promptlens.db.models.UTCDateTime(timezone=True), nullable=False),
+        sa.Column("computed_at", vibecheck.db.models.UTCDateTime(timezone=True), nullable=False),
         sa.ForeignKeyConstraint(
             ["commit_sha"],
             ["commits.sha"],
@@ -155,7 +155,7 @@ def upgrade() -> None:
         sa.Column("is_human_prompt", sa.Boolean(), nullable=False),
         sa.Column("is_interrupt", sa.Boolean(), nullable=False),
         sa.Column("is_sidechain", sa.Boolean(), nullable=False),
-        sa.Column("timestamp", promptlens.db.models.UTCDateTime(timezone=True), nullable=True),
+        sa.Column("timestamp", vibecheck.db.models.UTCDateTime(timezone=True), nullable=True),
         sa.Column("text", sa.Text(), nullable=True),
         sa.Column("model", sa.Text(), nullable=True),
         sa.Column("api_message_id", sa.Text(), nullable=True),
@@ -186,7 +186,7 @@ def upgrade() -> None:
         sa.Column("line_no", sa.Integer(), nullable=False),
         sa.Column("event_uuid", sa.Text(), nullable=True),
         sa.Column("event_type", sa.Text(), nullable=True),
-        sa.Column("timestamp", promptlens.db.models.UTCDateTime(timezone=True), nullable=True),
+        sa.Column("timestamp", vibecheck.db.models.UTCDateTime(timezone=True), nullable=True),
         sa.Column(
             "payload",
             sa.JSON().with_variant(postgresql.JSONB(astext_type=sa.Text()), "postgresql"),
@@ -233,7 +233,7 @@ def upgrade() -> None:
         sa.Column("command", sa.Text(), nullable=True),
         sa.Column("is_error", sa.Boolean(), nullable=True),
         sa.Column("is_sidechain", sa.Boolean(), nullable=False),
-        sa.Column("timestamp", promptlens.db.models.UTCDateTime(timezone=True), nullable=True),
+        sa.Column("timestamp", vibecheck.db.models.UTCDateTime(timezone=True), nullable=True),
         sa.ForeignKeyConstraint(
             ["session_id"],
             ["sessions.id"],
@@ -275,7 +275,7 @@ def upgrade() -> None:
         sa.Column("scope", sa.Text(), nullable=False),
         sa.Column("category", sa.Text(), nullable=False),
         sa.Column("suggestion", sa.Text(), nullable=False),
-        sa.Column("created_at", promptlens.db.models.UTCDateTime(timezone=True), nullable=False),
+        sa.Column("created_at", vibecheck.db.models.UTCDateTime(timezone=True), nullable=False),
         sa.ForeignKeyConstraint(
             ["message_id"],
             ["messages.id"],

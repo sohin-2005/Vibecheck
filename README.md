@@ -1,8 +1,8 @@
-# PromptLens
+# Vibecheck
 
-**A fitness tracker for AI-assisted coding.** PromptLens reads the session logs your AI coding tools leave on your machine (Claude Code, Antigravity, and experimentally Codex CLI and Aider) together with your git history. It shows what your AI usage costs, which sessions turn into struggles and why, how much AI-written code survives, and how your prompts could have been better. It runs locally, and your data stays in your own database.
+**A fitness tracker for AI-assisted coding.** Vibecheck reads the session logs your AI coding tools leave on your machine (Claude Code, Antigravity, and experimentally Codex CLI and Aider) together with your git history. It shows what your AI usage costs, which sessions turn into struggles and why, how much AI-written code survives, and how your prompts could have been better. It runs locally, and your data stays in your own database.
 
-<!-- Screenshot: run `promptlens demo`, open the dashboard, and save a capture as docs/screenshot.png -->
+<!-- Screenshot: run `vibecheck demo`, open the dashboard, and save a capture as docs/screenshot.png -->
 
 ## Why
 
@@ -12,7 +12,7 @@ AI coding tools keep a detailed transcript of every session, but nothing reads i
 - whether the code the AI wrote is still there a month later
 - how a vague prompt could have been phrased
 
-PromptLens answers those questions from data you already have, and it's useful from your first session.
+Vibecheck answers those questions from data you already have, and it's useful from your first session.
 
 ## What you get
 
@@ -23,7 +23,7 @@ PromptLens answers those questions from data you already have, and it's useful f
 - **Struggle scores** with a "why" breakdown and a step-by-step replay of every session.
 - **Habit insights:** "Sessions whose first prompt named a file reached a commit in 4 prompts vs 9", once you have enough sessions.
 - **Team mode:** share anonymized weekly aggregates (never prompts or code) and compare week by week.
-- **`promptlens findings`:** drafts a "What I learned" write-up from your real numbers.
+- **`vibecheck findings`:** drafts a "What I learned" write-up from your real numbers.
 
 ## Supported tools
 
@@ -35,18 +35,18 @@ PromptLens answers those questions from data you already have, and it's useful f
 | Aider | `.aider.chat.history.md` in each repo | **Experimental:** built from the documented format. Only session start times are logged. |
 | Cursor, Windsurf, Copilot | Stored in internal databases, or not stored locally | Not supported. There's no stable file format to read. |
 
-Adding a tool means writing one adapter in `backend/promptlens/sources/` that turns its log format into PromptLens events. Everything downstream (metrics, survival, coach, digest, team) works unchanged. Choose which tools to read with `[sources] tools = [...]` in the config.
+Adding a tool means writing one adapter in `backend/vibecheck/sources/` that turns its log format into Vibecheck events. Everything downstream (metrics, survival, coach, digest, team) works unchanged. Choose which tools to read with `[sources] tools = [...]` in the config.
 
 ## Quick start with demo data
 
 Needs Python 3.11+, [uv](https://docs.astral.sh/uv/) and Node 20+.
 
 ```bash
-git clone <this repo> promptlens && cd promptlens
+git clone <this repo> vibecheck && cd vibecheck
 cd frontend && npm install && npm run build && cd ..
 cd backend && uv sync
-uv run promptlens demo
-PROMPTLENS_DATABASE_URL=sqlite:///$HOME/.promptlens/demo.db uv run promptlens serve
+uv run vibecheck demo
+VIBECHECK_DATABASE_URL=sqlite:///$HOME/.vibecheck/demo.db uv run vibecheck serve
 ```
 
 Then open http://127.0.0.1:8000.
@@ -56,43 +56,43 @@ On Windows PowerShell 5.1 (no `&&`), run each line separately:
 ```powershell
 cd frontend; npm install; npm run build; cd ..
 cd backend; python -m uv sync
-python -m uv run promptlens demo
-$env:PROMPTLENS_DATABASE_URL = "sqlite:///$($HOME -replace '\\','/')/.promptlens/demo.db"
-python -m uv run promptlens serve
+python -m uv run vibecheck demo
+$env:VIBECHECK_DATABASE_URL = "sqlite:///$($HOME -replace '\\','/')/.vibecheck/demo.db"
+python -m uv run vibecheck serve
 ```
 
-If `uv` isn't found, run the installed commands directly: `.\.venv\Scripts\promptlens.exe demo` and so on.
+If `uv` isn't found, run the installed commands directly: `.\.venv\Scripts\vibecheck.exe demo` and so on.
 
 ## Using it on your own data
 
 ```bash
 docker compose up -d                 # PostgreSQL 16 on localhost:5432 (or use SQLite, below)
 cd backend
-uv run promptlens init               # writes ~/.promptlens/config.toml, runs migrations
-uv run promptlens run                # ingest + git + analyze + insights
-uv run promptlens digest             # your hardest recent session and what went wrong
-uv run promptlens serve              # dashboard at http://127.0.0.1:8000
+uv run vibecheck init               # writes ~/.vibecheck/config.toml, runs migrations
+uv run vibecheck run                # ingest + git + analyze + insights
+uv run vibecheck digest             # your hardest recent session and what went wrong
+uv run vibecheck serve              # dashboard at http://127.0.0.1:8000
 ```
 
-No Docker? Set `[database] url = "sqlite:///C:/Users/you/.promptlens/promptlens.db"` in the config, or set the `PROMPTLENS_DATABASE_URL` environment variable.
+No Docker? Set `[database] url = "sqlite:///C:/Users/you/.vibecheck/vibecheck.db"` in the config, or set the `VIBECHECK_DATABASE_URL` environment variable.
 
 | Command | What it does |
 |---|---|
-| `promptlens ingest` | Read new session data from every enabled tool (incremental, safe to re-run) |
-| `promptlens git` | Collect commits from the repos your sessions ran in and link them to sessions |
-| `promptlens analyze` | Session metrics, struggle scores, code survival, prompt features |
-| `promptlens digest [--days N]` | Hardest recent session, what went wrong, tips |
-| `promptlens coach [--rewrite]` | Score prompts with an LLM; `--rewrite` also rewrites the weakest ones |
-| `promptlens insights` | Recompute habit-vs-outcome comparisons |
-| `promptlens findings [--out FILE]` | Draft your "What I learned" section from your numbers |
-| `promptlens report --week` | Write `reports/YYYY-Www.md` |
-| `promptlens team export / import / push` | Share weekly aggregates with a team (see below) |
-| `promptlens stats` | Quick terminal summary |
-| `promptlens reset` | Drop and recreate all tables (asks first) |
+| `vibecheck ingest` | Read new session data from every enabled tool (incremental, safe to re-run) |
+| `vibecheck git` | Collect commits from the repos your sessions ran in and link them to sessions |
+| `vibecheck analyze` | Session metrics, struggle scores, code survival, prompt features |
+| `vibecheck digest [--days N]` | Hardest recent session, what went wrong, tips |
+| `vibecheck coach [--rewrite]` | Score prompts with an LLM; `--rewrite` also rewrites the weakest ones |
+| `vibecheck insights` | Recompute habit-vs-outcome comparisons |
+| `vibecheck findings [--out FILE]` | Draft your "What I learned" section from your numbers |
+| `vibecheck report --week` | Write `reports/YYYY-Www.md` |
+| `vibecheck team export / import / push` | Share weekly aggregates with a team (see below) |
+| `vibecheck stats` | Quick terminal summary |
+| `vibecheck reset` | Drop and recreate all tables (asks first) |
 
 ### Costs
 
-Prices change, so PromptLens ships with none. Add the models you use to `~/.promptlens/config.toml` in USD per million tokens:
+Prices change, so Vibecheck ships with none. Add the models you use to `~/.vibecheck/config.toml` in USD per million tokens:
 
 ```toml
 [pricing.models."claude-opus-5"]
@@ -106,15 +106,15 @@ Costs are labelled **API-equivalent**: subscription users don't pay per token, s
 
 ### Prompt coach and rewrites
 
-`promptlens coach` uses [Ollama](https://ollama.com) locally by default (`ollama pull llama3.1:8b`). Gemini and Groq are supported too, but they send your redacted prompts to a cloud API. They refuse to run unless you set `send_to_cloud_confirmed = true` under `[llm]`, and they read keys only from `GEMINI_API_KEY` / `GROQ_API_KEY`.
+`vibecheck coach` uses [Ollama](https://ollama.com) locally by default (`ollama pull llama3.1:8b`). Gemini and Groq are supported too, but they send your redacted prompts to a cloud API. They refuse to run unless you set `send_to_cloud_confirmed = true` under `[llm]`, and they read keys only from `GEMINI_API_KEY` / `GROQ_API_KEY`.
 
 Rewrites work without any LLM. The template version fills in the files the AI actually edited after your prompt and a short command that failed, and puts `[placeholders]` wherever the logs can't know the answer. With an LLM configured, the rewrite is written by the model and falls back to the template if the model fails.
 
 ### Team mode
 
-1. The team lead picks a shared secret and starts the server with it: `PROMPTLENS_TEAM_TOKEN=... promptlens serve --host 0.0.0.0`.
-2. Each teammate sets the same `PROMPTLENS_TEAM_TOKEN` and runs `promptlens team push --url http://lead-host:8000 --member alex`.
-3. Without a network, share files instead: `promptlens team export --member alex --out alex.json`, then the lead runs `promptlens team import alex.json`.
+1. The team lead picks a shared secret and starts the server with it: `VIBECHECK_TEAM_TOKEN=... vibecheck serve --host 0.0.0.0`.
+2. Each teammate sets the same `VIBECHECK_TEAM_TOKEN` and runs `vibecheck team push --url http://lead-host:8000 --member alex`.
+3. Without a network, share files instead: `vibecheck team export --member alex --out alex.json`, then the lead runs `vibecheck team import alex.json`.
 
 An export contains, per ISO week, only counts, rates and medians: sessions, active hours, tokens, commit rate, median struggle, tool error rate, 7-day survival, prompt specificity and a context share. It never contains prompts, replies, code, file paths, commands, commit messages or session ids. Project names are hashed unless you pass `--include-projects`. The receiving endpoint is off unless the server sets a token.
 
@@ -142,7 +142,7 @@ An export contains, per ISO week, only counts, rates and medians: sessions, acti
 
 ## What I learned from my own data
 
-_After a few weeks of use, run `promptlens findings --out docs/FINDINGS.md` and replace this paragraph with the parts worth keeping. The draft states facts from your data: where your time went, your biggest source of friction, your most error-prone tool, survival and prompt habits. It warns you when there are too few sessions to trust._
+_After a few weeks of use, run `vibecheck findings --out docs/FINDINGS.md` and replace this paragraph with the parts worth keeping. The draft states facts from your data: where your time went, your biggest source of friction, your most error-prone tool, survival and prompt habits. It warns you when there are too few sessions to trust._
 
 ## Architecture
 

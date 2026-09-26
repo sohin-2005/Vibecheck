@@ -2,10 +2,10 @@ from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import select
 
-from promptlens.db.models import Commit, CommitFile, Project, Session, SessionCommit, ToolCall
-from promptlens.gitdata.collector import collect_all, is_ignored, parse_numstat
-from promptlens.gitdata.linker import link_all
 from tests.conftest import git
+from vibecheck.db.models import Commit, CommitFile, Project, Session, SessionCommit, ToolCall
+from vibecheck.gitdata.collector import collect_all, is_ignored, parse_numstat
+from vibecheck.gitdata.linker import link_all
 
 T0 = datetime(2026, 9, 1, 10, 0, tzinfo=UTC)
 
@@ -153,7 +153,7 @@ def test_linking_is_idempotent(cfg, db, repo):
 
 
 def test_turns_to_commit(cfg, db, repo):
-    from promptlens.db.models import Message
+    from vibecheck.db.models import Message
 
     setup_project(db, repo)
     for i, minutes in enumerate([0, 3, 30]):

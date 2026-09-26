@@ -1,8 +1,8 @@
 from datetime import UTC, datetime
 
-from promptlens.config import Config
-from promptlens.db.models import Message, Project, Session, ToolCall
-from promptlens.metrics.struggle import (
+from vibecheck.config import Config
+from vibecheck.db.models import Message, Project, Session, ToolCall
+from vibecheck.metrics.struggle import (
     compute_signals,
     compute_struggle,
     percentile_ranks,
@@ -114,7 +114,7 @@ def test_pasted_documents_are_not_corrections():
 
 
 def test_strip_pasted():
-    from promptlens.ingest.parser import strip_pasted
+    from vibecheck.ingest.parser import strip_pasted
 
     assert (
         strip_pasted('hi <pasted_content id="a">\nbig\n</pasted_content id="a"> there')

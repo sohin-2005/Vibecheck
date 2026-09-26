@@ -3,9 +3,9 @@ from pathlib import Path
 
 import pytest
 
-from promptlens.config import Config
-from promptlens.db.models import Base
-from promptlens.db.session import get_engine, make_sessionmaker
+from vibecheck.config import Config
+from vibecheck.db.models import Base
+from vibecheck.db.session import get_engine, make_sessionmaker
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -58,3 +58,11 @@ def repo(tmp_path) -> Path:
     git(r, "config", "user.name", "Tester")
     git(r, "config", "commit.gpgsign", "false")
     return r
+
+
+@pytest.fixture(autouse=True)
+def _isolated_home(tmp_path, monkeypatch):
+    """Keep the CLI's one-time ~/.promptlens move away from the real home directory."""
+    import vibecheck.config
+
+    monkeypatch.setattr(vibecheck.config, "LEGACY_HOME_DIR", tmp_path / "no-legacy-home")

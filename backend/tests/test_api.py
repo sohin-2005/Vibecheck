@@ -4,11 +4,11 @@ import time
 import pytest
 from fastapi.testclient import TestClient
 
-from promptlens.api.main import create_app
-from promptlens.db.models import Insight
-from promptlens.ingest.ingest import ingest_all
-from promptlens.pipeline import analyze_all
 from tests.conftest import FIXTURES
+from vibecheck.api.main import create_app
+from vibecheck.db.models import Insight
+from vibecheck.ingest.ingest import ingest_all
+from vibecheck.pipeline import analyze_all
 
 
 @pytest.fixture

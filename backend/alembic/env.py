@@ -3,13 +3,13 @@ import os
 from sqlalchemy import engine_from_config, pool
 
 from alembic import context
-from promptlens.db.models import Base
+from vibecheck.db.models import Base
 
 config = context.config
 target_metadata = Base.metadata
 
-# URL priority: passed in by promptlens > PROMPTLENS_DATABASE_URL > alembic.ini.
-_url = config.attributes.get("promptlens_url") or os.environ.get("PROMPTLENS_DATABASE_URL")
+# URL priority: passed in by vibecheck > VIBECHECK_DATABASE_URL > alembic.ini.
+_url = config.attributes.get("vibecheck_url") or os.environ.get("VIBECHECK_DATABASE_URL")
 if _url:
     config.set_main_option("sqlalchemy.url", _url.replace("%", "%%"))
 

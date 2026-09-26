@@ -1,9 +1,9 @@
 import shutil
 
-from promptlens.db.models import Session
-from promptlens.ingest.ingest import ingest_all
-from promptlens.pipeline import analyze_all
 from tests.conftest import FIXTURES
+from vibecheck.db.models import Session
+from vibecheck.ingest.ingest import ingest_all
+from vibecheck.pipeline import analyze_all
 
 
 def test_analyze_runs_end_to_end(cfg, db):

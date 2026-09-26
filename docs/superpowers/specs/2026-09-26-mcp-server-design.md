@@ -1,11 +1,11 @@
-# PromptLens MCP server — design
+# Vibecheck MCP server — design
 
 Date: 2026-09-26
-Status: draft, awaiting review
+Status: approved
 
 ## Goal
 
-Let the AI coding agent itself ask PromptLens for feedback while it works: "am I going in
+Let the AI coding agent itself ask Vibecheck for feedback while it works: "am I going in
 circles right now?", "what usually goes wrong in this repo?", "what habits lead to good
 sessions?", "how could this prompt be better?". Today that feedback only reaches the human,
 through the dashboard, `digest` and `coach`.
@@ -15,9 +15,9 @@ through the dashboard, `digest` and `coach`.
 | Question | Decision |
 |---|---|
 | Delivery | **On demand.** An MCP server the agent calls when it wants to. No hooks and no generated rules files in this phase. |
-| Data | **Past sessions plus the live session.** The agent can check the session in progress without running `promptlens run`. |
+| Data | **Past sessions plus the live session.** The agent can check the session in progress without running `vibecheck run`. |
 | History scope | **All projects, with details only from this one.** Only habit statistics come from other projects. File names, commands and prompt snippets come from the current project only. |
-| Transport | **stdio**, started as `promptlens mcp`, built on the official `mcp` Python SDK (FastMCP). |
+| Transport | **stdio**, started as `vibecheck mcp`, built on the official `mcp` Python SDK (FastMCP). |
 
 Out of this phase: Claude Code hooks, writing into `CLAUDE.md`/`AGENTS.md`, live parsing for
 tools other than Claude Code, LLM-backed rewrites inside MCP calls, and any database writes.
@@ -25,9 +25,9 @@ tools other than Claude Code, LLM-backed rewrites inside MCP calls, and any data
 ## Usage
 
 ```bash
-claude mcp add promptlens -- promptlens mcp
+claude mcp add vibecheck -- vibecheck mcp
 # or, from a checkout:
-claude mcp add promptlens -- uv --directory /path/to/backend run promptlens mcp
+claude mcp add vibecheck -- uv --directory /path/to/backend run vibecheck mcp
 ```
 
 Codex CLI and Antigravity register the same command in their MCP config. The server takes its
@@ -37,8 +37,8 @@ working directory, or `--project PATH`, as the current project.
 
 Every tool returns a short Markdown string for the model to read, capped at about 2,000
 characters. All text goes through `Redactor` before it is returned. No tool raises: a failure
-comes back as a one-line explanation, for example "No PromptLens database found — run
-`promptlens init` and `promptlens run` to enable project lessons."
+comes back as a one-line explanation, for example "No Vibecheck database found — run
+`vibecheck init` and `vibecheck run` to enable project lessons."
 
 ### `session_health()` — live, no database needed
 
@@ -48,7 +48,7 @@ comes back as a one-line explanation, for example "No PromptLens database found 
    take the `*.jsonl` with the newest modification time. If the folder is missing, fall back
    to the newest file across `claude_projects_dir` whose first event has a `cwd` equal to the
    project directory.
-2. Parse it with `promptlens.ingest.parser.iter_events` (sidechain events included, as in
+2. Parse it with `vibecheck.ingest.parser.iter_events` (sidechain events included, as in
    ingestion).
 3. Build the signal inputs from the events: human prompts, interrupts, failed tool results
    matched to their `ToolUse` by id, and edit paths from `EDIT_TOOLS`. Feed them to the
@@ -82,11 +82,11 @@ normalising separators and case. For the project's sessions in the window, using
   success criteria
 - up to three tips, reusing the rules in `digest._tips`
 
-If the project has no sessions, say so and suggest `promptlens run`.
+If the project has no sessions, say so and suggest `vibecheck run`.
 
 ### `habits()` — database, all projects, numbers only
 
-Return the stored `Insight` rows (made by `promptlens insights`) as their titles and numeric
+Return the stored `Insight` rows (made by `vibecheck insights`) as their titles and numeric
 details. The output never contains paths, commands, prompt text or project names, and a test
 checks this. Below `INSIGHT_THRESHOLD` sessions, report the progress instead ("12 of 20
 sessions needed").
@@ -101,7 +101,7 @@ calls an LLM.
 ## Structure
 
 ```
-backend/promptlens/mcp/
+backend/vibecheck/mcp/
     __init__.py
     server.py      # FastMCP app, tool registration, `run(project_dir)`; thin wrappers only
     locate.py      # encode_project_dir(), find_current_session(): pure path logic
@@ -110,7 +110,7 @@ backend/promptlens/mcp/
     render.py      # Markdown formatting, length cap, redaction
 ```
 
-`cli.py` gains `promptlens mcp [--project PATH]`. The tool functions take plain arguments and
+`cli.py` gains `vibecheck mcp [--project PATH]`. The tool functions take plain arguments and
 return strings, so they can be tested without an MCP client. `server.py` only wires them up.
 Logging goes to stderr, because stdout carries the protocol.
 

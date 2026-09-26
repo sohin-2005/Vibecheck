@@ -1,8 +1,8 @@
 from datetime import UTC, datetime, timedelta
 
-from promptlens.config import Config
-from promptlens.db.models import Message, Project, Session, ToolCall
-from promptlens.insights.digest import build_digest
+from vibecheck.config import Config
+from vibecheck.db.models import Message, Project, Session, ToolCall
+from vibecheck.insights.digest import build_digest
 
 NOW = datetime(2026, 9, 24, 12, tzinfo=UTC)
 CFG = Config()

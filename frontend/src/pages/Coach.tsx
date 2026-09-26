@@ -35,7 +35,7 @@ export default function Coach() {
       <PageHeader title="Prompt coach" subtitle={`How specific and well-scoped your prompts are, with better versions of the vague ones. Rubric ${s.rubric_version}.`} />
       {s.scored === 0 && (
         <div className="mb-8 border-l-2 border-accent py-1 pl-4 text-sm text-ink-2">
-          None of your {s.prompts} prompts have LLM scores yet. Run <code>promptlens coach</code> with Ollama running, or
+          None of your {s.prompts} prompts have LLM scores yet. Run <code>vibecheck coach</code> with Ollama running, or
           start it from <Link className="underline" to="/settings">Settings</Link>. Rule-based stats below work without it.
         </div>
       )}

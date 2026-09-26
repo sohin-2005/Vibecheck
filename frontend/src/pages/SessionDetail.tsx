@@ -140,7 +140,7 @@ export default function SessionDetail() {
           {s.struggle_signals && cfg.data ? (
             <WhyScore signals={s.struggle_signals} weights={cfg.data.struggle_weights} />
           ) : (
-            <Empty>Run promptlens analyze to compute struggle signals.</Empty>
+            <Empty>Run vibecheck analyze to compute struggle signals.</Empty>
           )}
         </Card>
         <Card title="Linked commits" subtitle="How the link was made, and how much of the code survived.">

@@ -28,7 +28,7 @@ export default function Overview() {
       {t.sessions === 0 ? (
         <Card>
           <Empty>
-            No sessions in this range. Run <code>promptlens ingest</code>, or try <code>promptlens demo</code>.
+            No sessions in this range. Run <code>vibecheck ingest</code>, or try <code>vibecheck demo</code>.
           </Empty>
         </Card>
       ) : (

@@ -1,6 +1,6 @@
 from datetime import UTC, date, datetime, timedelta
 
-from promptlens.db.models import (
+from vibecheck.db.models import (
     Commit,
     Insight,
     LineSurvival,
@@ -11,13 +11,13 @@ from promptlens.db.models import (
     Session,
     SessionCommit,
 )
-from promptlens.insights.analysis import (
+from vibecheck.insights.analysis import (
     SessionRow,
     compare_groups,
     compute_insights,
     median_diff_ci,
 )
-from promptlens.insights.report import write_weekly_report
+from vibecheck.insights.report import write_weekly_report
 
 
 def row(i, **kw):
@@ -186,7 +186,7 @@ def test_weekly_report(db, tmp_path):
     path = write_weekly_report(db, tmp_path, today=date(2026, 9, 18))
     assert path.name == "2026-W38.md"
     text = path.read_text(encoding="utf-8")
-    assert "# PromptLens weekly report: 2026-W38" in text
+    assert "# Vibecheck weekly report: 2026-W38" in text
     assert "| Sessions | 24 |" in text
     assert "## Highest-struggle sessions" in text
     assert "80.0%" in text  # 7-day survival of last week's AI commit
